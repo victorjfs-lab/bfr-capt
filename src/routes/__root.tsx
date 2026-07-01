@@ -77,13 +77,13 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Investimentos - Corretora" },
+      { title: "Seu Perfil de Investidor" },
       {
         name: "description",
         content:
           "Descubra o melhor caminho para seus investimentos. Assista ao vídeo e responda nossa pesquisa.",
       },
-      { property: "og:title", content: "Investimentos - Corretora" },
+      { property: "og:title", content: "Seu Perfil de Investidor" },
       { property: "og:description", content: "Descubra o melhor caminho para seus investimentos." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -99,7 +99,8 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         rel: "stylesheet",
         href: "https://fonts.googleapis.com/css2?family=Urbanist:wght@400;500;600;700;800&family=Epilogue:wght@400;500;600;700&display=swap",
       },
-      { rel: "icon", href: "/favicon.ico", type: "image/x-icon" },
+      { rel: "icon", href: "/favicon.svg", type: "image/svg+xml" },
+      { rel: "shortcut icon", href: "/favicon.svg", type: "image/svg+xml" },
     ],
   }),
   shellComponent: RootShell,
