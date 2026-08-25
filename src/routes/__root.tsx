@@ -77,14 +77,17 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Seu Perfil de Investidor" },
+      { title: "NEXUM | Veja a pressão por trás do preço" },
       {
         name: "description",
         content:
-          "Descubra o melhor caminho para seus investimentos. Assista ao vídeo e responda nossa pesquisa.",
+          "Veja a pressão compradora e vendedora direto no gráfico. Teste o NEXUM gratuitamente por 60 dias.",
       },
-      { property: "og:title", content: "Seu Perfil de Investidor" },
-      { property: "og:description", content: "Descubra o melhor caminho para seus investimentos." },
+      { property: "og:title", content: "NEXUM | Veja a pressão por trás do preço" },
+      {
+        property: "og:description",
+        content: "Teste o NEXUM por 60 dias e veja a pressão compradora e vendedora no gráfico.",
+      },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
@@ -97,7 +100,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
       {
         rel: "stylesheet",
-        href: "https://fonts.googleapis.com/css2?family=Urbanist:wght@400;500;600;700;800&family=Epilogue:wght@400;500;600;700&display=swap",
+        href: "https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700;800&display=swap",
       },
       { rel: "icon", href: "/favicon.svg", type: "image/svg+xml" },
       { rel: "shortcut icon", href: "/favicon.svg", type: "image/svg+xml" },
@@ -111,7 +114,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
 
 function RootShell({ children }: { children: ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="pt-BR">
       <head>
         <HeadContent />
       </head>

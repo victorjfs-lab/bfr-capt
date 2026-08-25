@@ -1,219 +1,219 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useRef, useState } from "react";
+import { ArrowRight, BarChart3, Check, Gem, ListChecks } from "lucide-react";
+import { FormEvent, useState } from "react";
 
-export const Route = createFileRoute("/")({
-  component: Index,
-});
+export const Route = createFileRoute("/")({ component: Index });
 
 function Index() {
-  const [scrolled, setScrolled] = useState(false);
-  const heroRef = useRef<HTMLDivElement>(null);
+  const [videoStarted, setVideoStarted] = useState(false);
 
-  useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 20);
-    window.addEventListener("scroll", onScroll);
-    return () => window.removeEventListener("scroll", onScroll);
-  }, []);
+  function handleLeadSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+
+    const data = new FormData(event.currentTarget);
+    const message = [
+      "Olá! Quero ativar meus 30 dias grátis no NEXUM.",
+      "",
+      `Nome: ${data.get("name")}`,
+      `WhatsApp: ${data.get("whatsapp")}`,
+      `E-mail: ${data.get("email")}`,
+    ].join("\n");
+
+    window.open(
+      `https://wa.me/?text=${encodeURIComponent(message)}`,
+      "_blank",
+      "noopener,noreferrer",
+    );
+  }
 
   return (
-    <div className="flex min-h-[100dvh] flex-col">
-      {/* Navbar */}
-      <header
-        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-          scrolled ? "bg-background/90 backdrop-blur-md shadow-sm" : "bg-transparent"
-        }`}
-      >
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
-          <div className="flex items-center gap-2">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary text-xl font-extrabold text-primary-foreground font-[family-name:var(--font-display)]">
-              B
-            </div>
-            <span className="text-lg font-bold tracking-tight font-[family-name:var(--font-display)] text-foreground">
-              BFR Investimentos
-            </span>
-          </div>
-          <a
-            href="https://docs.google.com/forms/d/e/1FAIpQLSfCBEBTEwAuPjCNSmVP1RPRag18ZM4_9Edh06aoEMulsxTdww/viewform"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="hidden sm:inline-flex items-center justify-center rounded-lg bg-accent px-5 py-2.5 text-sm font-semibold text-accent-foreground shadow transition-all hover:bg-accent/90 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-          >
-            Quero conversar
-          </a>
-        </div>
-      </header>
-
-      {/* Hero */}
-      <section
-        ref={heroRef}
-        className="relative flex min-h-[100dvh] items-center justify-center overflow-hidden"
-      >
-        {/* Background layers */}
-        <div className="absolute inset-0 bg-gradient-to-br from-[#064e3b] via-[#0a3d2e] to-[#0d7a5f]" />
-        <div className="absolute inset-0 opacity-20 bg-[radial-gradient(circle_at_top_right,#c9a84c,transparent_50%)]" />
-        <div className="absolute inset-0 opacity-10 bg-[radial-gradient(circle_at_bottom_left,#f5f0e0,transparent_50%)]" />
-
-        {/* Decorative shapes */}
-        <div className="absolute top-20 left-10 h-64 w-64 rounded-full bg-accent/5 blur-3xl" />
-        <div className="absolute bottom-20 right-10 h-96 w-96 rounded-full bg-primary/10 blur-3xl" />
-
-        <div className="relative z-10 mx-auto max-w-5xl px-6 text-center">
-          <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-1.5 text-sm font-medium text-[#f5f0e0]/80 backdrop-blur-sm mb-8">
-            <span className="h-2 w-2 rounded-full bg-accent animate-pulse" />
-            Sua história financeira importa para mim
-          </div>
-
-          <h1 className="text-5xl font-extrabold leading-[1.1] tracking-tight text-[#f5f0e0] sm:text-6xl md:text-7xl font-[family-name:var(--font-display)]">
-            O que você quer
-            <br />
-            <span className="text-accent">conquistar</span> com seu
-            <br />
-            dinheiro?
-          </h1>
-
-          <p className="mx-auto mt-6 max-w-2xl text-lg leading-relaxed text-[#f5f0e0]/70 sm:text-xl font-[family-name:var(--font-sans)]">
-            Não existem fórmulas mágicas. Mas existe uma maneira certa de construir o que você sonha
-            — e eu quero te ajudar nessa jornada, passo a passo, com estratégia e sem promessas
-            vazias.
-          </p>
-
-          <div className="mt-10 flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
-            <a
-              href="#video"
-              className="inline-flex items-center justify-center rounded-xl bg-accent px-8 py-4 text-base font-bold text-accent-foreground shadow-lg shadow-accent/20 transition-all hover:bg-accent/90 hover:shadow-xl hover:-translate-y-0.5"
-            >
-              Assistir ao vídeo
-              <svg
-                className="ml-2 h-5 w-5"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                strokeWidth={2}
-              >
-                <path strokeLinecap="round" strokeLinejoin="round" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
-              </svg>
+    <div className="reference-page">
+      <main>
+        <section className="reference-hero" aria-labelledby="main-title">
+          <div className="reference-container reference-hero-inner">
+            <a className="reference-brand" href="#inicio" aria-label="NEXUM — início">
+              <img src="/nexum-logo-brand.png" alt="NEXUM — Indicador de Fluxo" />
             </a>
-            <a
-              href="https://docs.google.com/forms/d/e/1FAIpQLSfCBEBTEwAuPjCNSmVP1RPRag18ZM4_9Edh06aoEMulsxTdww/viewform"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center justify-center rounded-xl border border-white/20 bg-white/5 px-8 py-4 text-base font-semibold text-[#f5f0e0] backdrop-blur-sm transition-all hover:bg-white/10 hover:-translate-y-0.5"
-            >
-              Responder pesquisa
-            </a>
-          </div>
-        </div>
 
-        {/* Bottom fade */}
-        <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-background to-transparent" />
-      </section>
+            <div id="inicio" className="reference-grid">
+              <div className="reference-copy">
+                <h1 id="main-title" className="reference-title">
+                  Entradas perfeitas começam antes do clique.
+                  <span>O poder de 2 indicadores na consistência definitiva</span>
+                </h1>
 
-      {/* Stats */}
-      <section className="relative z-10 -mt-16 mx-auto w-full max-w-6xl px-6">
-        <div className="grid grid-cols-2 gap-px overflow-hidden rounded-2xl bg-border shadow-xl sm:grid-cols-4">
-          {[
-            { value: "+10mil", label: "Clientes ativos" },
-            { value: "19+", label: "Especialistas no time" },
-            { value: "20+", label: "Anos de experiência combinada" },
-            { value: "CVM", label: "Regulada e credenciada XP" },
-          ].map((stat, i) => (
-            <div
-              key={i}
-              className="flex flex-col items-center justify-center bg-card px-4 py-8 text-center"
-            >
-              <span className="text-3xl font-extrabold text-primary font-[family-name:var(--font-display)]">
-                {stat.value}
-              </span>
-              <span className="mt-1 text-sm font-medium text-muted-foreground">{stat.label}</span>
+                <div className="reference-lead">
+                  <p>
+                    O <strong>NEXUM</strong> é o indicador que te mostra com exatidão as regiões
+                    perfeitas para entradas e saídas no mercado.
+                  </p>
+                </div>
+
+                <form className="lead-form" onSubmit={handleLeadSubmit}>
+                  <label className="lead-field">
+                    <span>Nome</span>
+                    <input
+                      name="name"
+                      type="text"
+                      autoComplete="name"
+                      placeholder="Seu nome"
+                      required
+                    />
+                  </label>
+
+                  <label className="lead-field">
+                    <span>WhatsApp</span>
+                    <input
+                      name="whatsapp"
+                      type="tel"
+                      inputMode="tel"
+                      autoComplete="tel"
+                      placeholder="(00) 00000-0000"
+                      required
+                    />
+                  </label>
+
+                  <label className="lead-field lead-field-email">
+                    <span>E-mail</span>
+                    <input
+                      name="email"
+                      type="email"
+                      autoComplete="email"
+                      placeholder="voce@email.com"
+                      required
+                    />
+                  </label>
+
+                  <button className="reference-button" type="submit">
+                    ATIVAR MEUS 30 DIAS GRÁTIS
+                    <ArrowRight aria-hidden="true" />
+                  </button>
+                </form>
+
+                <div className="reference-proof" aria-label="Benefícios da ativação">
+                  <span>
+                    <Check aria-hidden="true" /> 30 dias de acesso gratuito
+                  </span>
+                  <span>
+                    <Check aria-hidden="true" /> Ativação acompanhada
+                  </span>
+                  <span>
+                    <Check aria-hidden="true" /> Aulas e suporte incluídos
+                  </span>
+                </div>
+
+                <p className="reference-legal">
+                  Benefício disponibilizado através de uma ação em parceria com a BFR. Consulte as
+                  condições de ativação.
+                </p>
+              </div>
+
+              <div className="reference-media">
+                <div className="reference-video">
+                  {videoStarted ? (
+                    <iframe
+                      src="https://player.vimeo.com/video/1218385882?autoplay=1&color=8a2cff&title=0&portrait=0&byline=0"
+                      title="Demonstração do indicador NEXUM"
+                      allow="autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media"
+                      allowFullScreen
+                    />
+                  ) : (
+                    <button
+                      className="reference-poster"
+                      type="button"
+                      aria-label="Reproduzir demonstração do NEXUM"
+                      onClick={() => setVideoStarted(true)}
+                    >
+                      <img
+                        src="/nexum-video-poster-v4.png"
+                        alt="Apresentador ao lado do gráfico NEXUM — Veja a pressão antes do movimento"
+                      />
+                    </button>
+                  )}
+                </div>
+
+                <div className="video-features" aria-label="Diferenciais do NEXUM">
+                  <div className="video-feature">
+                    <BarChart3 aria-hidden="true" />
+                    <span>Operacional completo</span>
+                  </div>
+                  <div className="video-feature">
+                    <Gem aria-hidden="true" />
+                    <span>B3, cripto e Forex</span>
+                  </div>
+                  <div className="video-feature">
+                    <ListChecks aria-hidden="true" />
+                    <span>Critério de entrada</span>
+                  </div>
+                </div>
+              </div>
             </div>
-          ))}
-        </div>
-      </section>
+          </div>
+        </section>
 
-      {/* Video Section */}
-      <section id="video" className="relative py-24 sm:py-32">
-        <div className="mx-auto max-w-5xl px-6">
-          <div className="mb-12 text-center">
-            <h2 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl font-[family-name:var(--font-display)]">
-              Assista ao meu convite
+        <section className="showcase-section" aria-labelledby="showcase-title">
+          <div className="reference-container">
+            <h2 id="showcase-title" className="showcase-title">
+              Simples e eficiente
             </h2>
-            <p className="mt-4 text-lg text-muted-foreground max-w-2xl mx-auto">
-              Em poucos minutos, vou te mostrar como a gente pode construir juntos o caminho que
-              leva aos seus objetivos — de verdade.
-            </p>
-          </div>
 
-          <div className="relative overflow-hidden rounded-2xl border border-border bg-card shadow-2xl">
-            <div className="aspect-video w-full">
-              <iframe
-                className="h-full w-full"
-                src="https://www.veed.io/embed/8ac3c42b-db2b-462a-a781-9937cc54ac8c?watermark=0&color=&sharing=0&title=0"
-                title="Convite BFR"
-                frameBorder="0"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                allowFullScreen
-              />
+            <div className="showcase-grid">
+              <figure className="showcase-card">
+                <img
+                  src="/nexum-exemplo-1.png"
+                  alt="NEXUM identificando uma região de continuidade compradora"
+                  loading="lazy"
+                />
+              </figure>
+              <figure className="showcase-card">
+                <img
+                  src="/nexum-exemplo-2.png"
+                  alt="NEXUM sinalizando uma entrada e o desenvolvimento do movimento"
+                  loading="lazy"
+                />
+              </figure>
+              <figure className="showcase-card">
+                <img
+                  src="/nexum-exemplo-3.png"
+                  alt="NEXUM mostrando contexto vendedor e possível reversão"
+                  loading="lazy"
+                />
+              </figure>
+              <figure className="showcase-card">
+                <img
+                  src="/nexum-exemplo-4.png"
+                  alt="NEXUM destacando uma região de entrada compradora"
+                  loading="lazy"
+                />
+              </figure>
             </div>
           </div>
-        </div>
-      </section>
+        </section>
 
-      {/* CTA Section */}
-      <section className="relative overflow-hidden py-24 sm:py-32">
-        <div className="absolute inset-0 bg-gradient-to-br from-[#064e3b] via-[#0a3d2e] to-[#0d7a5f]" />
-        <div className="absolute inset-0 opacity-20 bg-[radial-gradient(circle_at_top_left,#c9a84c,transparent_50%)]" />
-
-        <div className="relative z-10 mx-auto max-w-3xl px-6 text-center">
-          <h2 className="text-3xl font-bold tracking-tight text-[#f5f0e0] sm:text-4xl md:text-5xl font-[family-name:var(--font-display)]">
-            Vamos conversar?
-          </h2>
-          <p className="mt-6 text-lg leading-relaxed text-[#f5f0e0]/70">
-            Quero entender o que você busca — e se eu puder te ajudar, vou mostrar como. Sem
-            pressão, sem promessas. Só um papo honesto sobre o seu futuro financeiro.
-          </p>
-
-          <div className="mt-10">
-            <a
-              href="https://docs.google.com/forms/d/e/1FAIpQLSfCBEBTEwAuPjCNSmVP1RPRag18ZM4_9Edh06aoEMulsxTdww/viewform"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center justify-center rounded-xl bg-accent px-10 py-5 text-lg font-bold text-accent-foreground shadow-xl shadow-accent/20 transition-all hover:bg-accent/90 hover:shadow-2xl hover:-translate-y-1"
-            >
-              Responder pesquisa
-              <svg
-                className="ml-3 h-5 w-5"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                strokeWidth={2}
-              >
-                <path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />
-              </svg>
-            </a>
-          </div>
-
-          <p className="mt-4 text-sm text-[#f5f0e0]/50">
-            Leva menos de 3 minutos. Totalmente gratuito.
-          </p>
-        </div>
-      </section>
-
-      {/* Footer */}
-      <footer className="border-t border-border bg-background py-10">
-        <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-4 px-6 sm:flex-row">
-          <div className="flex items-center gap-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-md bg-primary text-sm font-extrabold text-primary-foreground font-[family-name:var(--font-display)]">
-              B
+        <footer className="legal-footer">
+          <div className="reference-container legal-footer-inner">
+            <div className="legal-company">
+              <strong>© 2026 Garcia Consultoria Financeira e Treinamentos LTDA</strong>
+              <span>CNPJ: 39.484.899/0001-09</span>
             </div>
-            <span className="text-sm font-semibold text-foreground font-[family-name:var(--font-display)]">
-              BFR Investimentos
-            </span>
+
+            <div className="legal-warning">
+              <p className="legal-warning-title">Aviso importante:</p>
+              <p>
+                O Sistema Trader é um treinamento educacional. Não prestamos recomendações de
+                investimento, consultoria ou promessa de rentabilidade. O mercado financeiro envolve
+                riscos e resultados passados não garantem resultados futuros.
+              </p>
+            </div>
+
+            <nav className="legal-links" aria-label="Links legais">
+              <a href="#politica-de-privacidade">Política de Privacidade</a>
+              <a href="#termos-de-uso">Termos de Uso</a>
+              <a href="#contato">Contato</a>
+            </nav>
           </div>
-          <p className="text-sm text-muted-foreground">
-            © {new Date().getFullYear()} BFR Investimentos. Todos os direitos reservados.
-          </p>
-        </div>
-      </footer>
+        </footer>
+      </main>
     </div>
   );
 }
