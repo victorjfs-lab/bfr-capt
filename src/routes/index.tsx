@@ -1,29 +1,43 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { ArrowRight, BarChart3, Check, Gem, ListChecks } from "lucide-react";
+import { ArrowRight, BarChart3, Check, ListChecks } from "lucide-react";
 import { FormEvent, useState } from "react";
+
+import { registerLead } from "../lib/leads.functions";
 
 export const Route = createFileRoute("/")({ component: Index });
 
 function Index() {
   const [videoStarted, setVideoStarted] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [formError, setFormError] = useState("");
 
-  function handleLeadSubmit(event: FormEvent<HTMLFormElement>) {
+  async function handleLeadSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
     const data = new FormData(event.currentTarget);
+    const lead = {
+      name: String(data.get("name") ?? ""),
+      whatsapp: String(data.get("whatsapp") ?? ""),
+      email: String(data.get("email") ?? ""),
+    };
     const message = [
       "Olá! Quero ativar meus 30 dias grátis no NEXUM.",
       "",
-      `Nome: ${data.get("name")}`,
-      `WhatsApp: ${data.get("whatsapp")}`,
-      `E-mail: ${data.get("email")}`,
+      `Nome: ${lead.name}`,
+      `WhatsApp: ${lead.whatsapp}`,
+      `E-mail: ${lead.email}`,
     ].join("\n");
 
-    window.open(
-      `https://wa.me/?text=${encodeURIComponent(message)}`,
-      "_blank",
-      "noopener,noreferrer",
-    );
+    setFormError("");
+    setIsSubmitting(true);
+
+    try {
+      await registerLead({ data: lead });
+      window.location.assign(`https://wa.me/555133765598?text=${encodeURIComponent(message)}`);
+    } catch {
+      setFormError("Não foi possível salvar seus dados. Confira os campos e tente novamente.");
+      setIsSubmitting(false);
+    }
   }
 
   return (
@@ -49,7 +63,7 @@ function Index() {
                   </p>
                 </div>
 
-                <form className="lead-form" onSubmit={handleLeadSubmit}>
+                <form className="lead-form" onSubmit={handleLeadSubmit} aria-busy={isSubmitting}>
                   <label className="lead-field">
                     <span>Nome</span>
                     <input
@@ -84,10 +98,16 @@ function Index() {
                     />
                   </label>
 
-                  <button className="reference-button" type="submit">
-                    ATIVAR MEUS 30 DIAS GRÁTIS
+                  <button className="reference-button" type="submit" disabled={isSubmitting}>
+                    {isSubmitting ? "SALVANDO SEUS DADOS..." : "ATIVAR MEUS 30 DIAS GRÁTIS"}
                     <ArrowRight aria-hidden="true" />
                   </button>
+
+                  {formError ? (
+                    <p className="lead-form-error" role="alert">
+                      {formError}
+                    </p>
+                  ) : null}
                 </form>
 
                 <div className="reference-proof" aria-label="Benefícios da ativação">
@@ -136,10 +156,6 @@ function Index() {
                   <div className="video-feature">
                     <BarChart3 aria-hidden="true" />
                     <span>Operacional completo</span>
-                  </div>
-                  <div className="video-feature">
-                    <Gem aria-hidden="true" />
-                    <span>B3, cripto e Forex</span>
                   </div>
                   <div className="video-feature">
                     <ListChecks aria-hidden="true" />

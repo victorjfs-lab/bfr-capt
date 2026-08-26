@@ -37,10 +37,23 @@ pnpm build
 pnpm start
 ```
 
-Variaveis de ambiente nao sao obrigatorias para a versao atual.
+Configure as variaveis de ambiente antes de iniciar o servidor:
+
+```bash
+ADMIN_PASSWORD=uma-senha-forte
+LEADS_DB_PATH=/caminho/persistente/leads.sqlite
+```
+
+`ADMIN_PASSWORD` protege a pagina `/inscritos`. `LEADS_DB_PATH` deve apontar
+para um volume persistente da hospedagem para que os cadastros sobrevivam a
+novos deploys. Consulte `.env.example`.
 
 ## Formulario
 
-Os botoes do site apontam para o Google Forms publicado:
+O formulario salva Nome, WhatsApp e E-mail em SQLite no servidor. Depois do
+cadastro, o visitante e encaminhado para o WhatsApp `+55 51 3376-5598`.
 
-https://docs.google.com/forms/d/e/1FAIpQLSfCBEBTEwAuPjCNSmVP1RPRag18ZM4_9Edh06aoEMulsxTdww/viewform
+## Area administrativa
+
+Acesse `/inscritos`, informe a senha definida em `ADMIN_PASSWORD` e consulte,
+pesquise ou exporte a lista de inscritos em CSV.

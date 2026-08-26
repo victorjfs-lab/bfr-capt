@@ -81,12 +81,12 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       {
         name: "description",
         content:
-          "Veja a pressão compradora e vendedora direto no gráfico. Teste o NEXUM gratuitamente por 60 dias.",
+          "Veja a pressão compradora e vendedora direto no gráfico. Teste o NEXUM gratuitamente por 30 dias.",
       },
       { property: "og:title", content: "NEXUM | Veja a pressão por trás do preço" },
       {
         property: "og:description",
-        content: "Teste o NEXUM por 60 dias e veja a pressão compradora e vendedora no gráfico.",
+        content: "Teste o NEXUM por 30 dias e veja a pressão compradora e vendedora no gráfico.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -117,8 +117,26 @@ function RootShell({ children }: { children: ReactNode }) {
     <html lang="pt-BR">
       <head>
         <HeadContent />
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+})(window,document,'script','dataLayer','GTM-N3G3CXB7');`,
+          }}
+        />
       </head>
       <body>
+        <noscript>
+          <iframe
+            src="https://www.googletagmanager.com/ns.html?id=GTM-N3G3CXB7"
+            height="0"
+            width="0"
+            title="Google Tag Manager"
+            style={{ display: "none", visibility: "hidden" }}
+          />
+        </noscript>
         {children}
         <Scripts />
       </body>
