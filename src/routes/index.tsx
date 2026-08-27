@@ -99,7 +99,7 @@ function Index() {
                   </label>
 
                   <button className="reference-button" type="submit" disabled={isSubmitting}>
-                    {isSubmitting ? "SALVANDO SEUS DADOS..." : "ATIVAR MEUS 30 DIAS GRÁTIS"}
+                    {isSubmitting ? "SALVANDO SEUS DADOS..." : "ATIVAR MEU PRESENTE AQUI"}
                     <ArrowRight aria-hidden="true" />
                   </button>
 
