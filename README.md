@@ -10,6 +10,7 @@ Site de captura da BFR Investimentos com landing page, video e chamada para o fo
 - Tailwind CSS
 - Node.js 22+
 - pnpm
+- MySQL em producao / SQLite no desenvolvimento local
 
 ## Rodar localmente
 
@@ -27,9 +28,11 @@ pnpm start
 
 O comando `pnpm start` executa o servidor gerado em `.output/server/index.mjs`.
 
-## Deploy Node.js
+## Deploy na Hostinger
 
-Use estes comandos em uma hospedagem Node.js:
+Requer o plano Business Web Hosting ou um plano Cloud com suporte a aplicacoes
+Node.js. No hPanel, selecione `Websites > Add Website > Deploy Web App`, conecte
+o repositorio GitHub e use:
 
 ```bash
 pnpm install --frozen-lockfile
@@ -37,21 +40,27 @@ pnpm build
 pnpm start
 ```
 
-Configure as variaveis de ambiente antes de iniciar o servidor:
+Crie um banco em `Databases > MySQL Databases` e cadastre estas variaveis no
+deploy da aplicacao:
 
 ```bash
 ADMIN_PASSWORD=uma-senha-forte
-LEADS_DB_PATH=/caminho/persistente/leads.sqlite
+DB_HOST=localhost
+DB_PORT=3306
+DB_USER=usuario_do_banco
+DB_PASSWORD=senha_do_banco
+DB_NAME=nome_do_banco
 ```
 
-`ADMIN_PASSWORD` protege a pagina `/inscritos`. `LEADS_DB_PATH` deve apontar
-para um volume persistente da hospedagem para que os cadastros sobrevivam a
-novos deploys. Consulte `.env.example`.
+`ADMIN_PASSWORD` protege a pagina `/inscritos`. A tabela `leads` e criada
+automaticamente no primeiro cadastro ou acesso ao painel. Consulte
+`.env.example`.
 
 ## Formulario
 
-O formulario salva Nome, WhatsApp e E-mail em SQLite no servidor. Depois do
-cadastro, o visitante e encaminhado para o WhatsApp `+55 51 3376-5598`.
+O formulario salva Nome, WhatsApp e E-mail no MySQL da Hostinger em producao e
+em SQLite durante o desenvolvimento local. Depois do cadastro, o visitante e
+encaminhado para o WhatsApp `+55 51 3376-5598`.
 
 ## Area administrativa
 

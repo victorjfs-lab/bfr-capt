@@ -6,7 +6,7 @@ import { adminAccessSchema, leadInputSchema } from "./leads.schema";
 
 export const registerLead = createServerFn({ method: "POST" })
   .validator(leadInputSchema)
-  .handler(async ({ data }) => insertLead(data));
+  .handler(async ({ data }) => await insertLead(data));
 
 export const getLeads = createServerFn({ method: "POST" })
   .validator(adminAccessSchema)
@@ -22,5 +22,5 @@ export const getLeads = createServerFn({ method: "POST" })
       throw new Error("Acesso não autorizado.");
     }
 
-    return listLeads();
+    return await listLeads();
   });
