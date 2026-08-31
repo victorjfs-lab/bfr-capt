@@ -1,9 +1,9 @@
-import { readFile } from "node:fs/promises";
-import { resolve } from "node:path";
+import { Buffer } from "node:buffer";
 
 import { createFileRoute } from "@tanstack/react-router";
 
 import { checkCourseToken } from "../../lib/course.server";
+import { indicatorsArchiveBase64 } from "../../lib/indicators.asset";
 
 export const Route = createFileRoute("/api/indicadores")({
   server: {
@@ -21,23 +21,17 @@ export const Route = createFileRoute("/api/indicadores")({
           return new Response("Acesso não autorizado.", { status: 403 });
         }
 
-        try {
-          const file = await readFile(
-            resolve(process.cwd(), "private-assets", "nexum-setembro.zip"),
-          );
+        const file = Buffer.from(indicatorsArchiveBase64, "base64");
 
-          return new Response(new Uint8Array(file), {
-            headers: {
-              "Cache-Control": "private, no-store",
-              "Content-Disposition": 'attachment; filename="Nexum-Setembro.zip"',
-              "Content-Length": String(file.byteLength),
-              "Content-Type": "application/zip",
-              Pragma: "no-cache",
-            },
-          });
-        } catch {
-          return new Response("Arquivo temporariamente indisponível.", { status: 503 });
-        }
+        return new Response(new Uint8Array(file), {
+          headers: {
+            "Cache-Control": "private, no-store",
+            "Content-Disposition": 'attachment; filename="Nexum-Setembro.zip"',
+            "Content-Length": String(file.byteLength),
+            "Content-Type": "application/zip",
+            Pragma: "no-cache",
+          },
+        });
       },
     },
   },
