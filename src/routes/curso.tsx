@@ -6,7 +6,6 @@ import {
   ChevronRight,
   Download,
   ExternalLink,
-  FileText,
   Headphones,
   LockKeyhole,
   MessageCircle,
@@ -339,11 +338,11 @@ function CoursePage() {
                 <div>
                   <span className="course-card-label">Material exclusivo</span>
                   <h3>Indicadores NEXUM</h3>
-                  <p>Pacote de instalação e manual rápido para acompanhar as aulas.</p>
+                  <p>Baixe o pacote com os três indicadores apresentados no treinamento.</p>
                 </div>
-                <button type="button" disabled>
-                  <FileText aria-hidden="true" /> Arquivo em preparação
-                </button>
+                <a href={`/api/indicadores?convite=${encodeURIComponent(convite)}`}>
+                  <Download aria-hidden="true" /> Baixar indicadores
+                </a>
               </div>
 
               <div className="course-support-card">

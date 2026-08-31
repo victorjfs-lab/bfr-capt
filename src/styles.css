@@ -2742,22 +2742,31 @@ footer {
   font-size: 10px;
   line-height: 1.55;
 }
-.course-download-card button {
+.course-download-card > a {
   grid-column: 1 / -1;
   min-height: 42px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(161, 91, 255, 0.3);
   border-radius: 9px;
-  background: rgba(255, 255, 255, 0.035);
-  color: rgba(255, 255, 255, 0.3);
+  background: linear-gradient(105deg, rgba(159, 80, 255, 0.2), rgba(117, 42, 225, 0.12));
+  color: #d8b9ff;
   font: 750 10px/1 var(--font-sans);
   letter-spacing: 0.05em;
   text-transform: uppercase;
+  transition:
+    border-color 0.2s ease,
+    background 0.2s ease,
+    color 0.2s ease;
 }
-.course-download-card button svg {
+.course-download-card > a:hover {
+  border-color: rgba(181, 113, 255, 0.56);
+  background: linear-gradient(105deg, rgba(159, 80, 255, 0.3), rgba(117, 42, 225, 0.18));
+  color: #fff;
+}
+.course-download-card > a svg {
   width: 14px;
   height: 14px;
 }
