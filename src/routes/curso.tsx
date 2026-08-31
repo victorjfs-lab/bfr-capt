@@ -4,11 +4,12 @@ import {
   Check,
   CheckCircle2,
   ChevronRight,
-  Clock3,
   Download,
+  ExternalLink,
   FileText,
   Headphones,
   LockKeyhole,
+  MessageCircle,
   Play,
   Sparkles,
 } from "lucide-react";
@@ -38,31 +39,37 @@ const lessons = [
     number: 1,
     title: "Comece por aqui",
     description: "Visão geral do treinamento e o caminho mais rápido para começar.",
-    duration: "6 min",
+    videoId: "1222710808",
+    resource: {
+      href: "https://chat.whatsapp.com/HpdmeM4P98a6TCQJIyk3cZ",
+      label: "Entrar no grupo de estudos",
+      description: "Participe do grupo exclusivo dos alunos NEXUM.",
+      type: "whatsapp" as const,
+    },
   },
   {
     number: 2,
-    title: "Instalação dos indicadores",
+    title: "Instalando os indicadores",
     description: "Passo a passo para instalar e configurar as ferramentas no seu gráfico.",
-    duration: "12 min",
+    videoId: "1222725561",
   },
   {
     number: 3,
-    title: "Nuvens de contexto",
-    description: "Como identificar a tendência e enxergar o contexto antes da entrada.",
-    duration: "15 min",
+    title: "Nexum e as entradas perfeitas",
+    description: "Como usar o NEXUM para reconhecer com clareza as melhores regiões de entrada.",
+    videoId: "1222725614",
   },
   {
     number: 4,
-    title: "Entradas e saídas com o NEXUM",
-    description: "Leitura prática das regiões de entrada, saída e possível reversão.",
-    duration: "18 min",
-  },
-  {
-    number: 5,
-    title: "Seu plano operacional",
-    description: "Organize critérios simples para operar com mais clareza e consistência.",
-    duration: "10 min",
+    title: "Não erre o Trade, otimização operacional",
+    description: "Organize sua leitura e seus critérios para operar com mais segurança e precisão.",
+    videoId: "1222725615",
+    resource: {
+      href: "https://paredesofrer.fluxosimplificado.com/",
+      label: "Conhecer o Pare de Sofrer",
+      description: "Acesse o próximo passo para sua evolução operacional.",
+      type: "external" as const,
+    },
   },
 ];
 
@@ -206,14 +213,14 @@ function CoursePage() {
           <div className="course-container course-layout">
             <div className="course-player-column">
               <div className="course-player-frame">
-                <img src="/nexum-video-poster-v4.png" alt="Área do vídeo da aula NEXUM" />
-                <div className="course-player-overlay">
-                  <span className="course-player-icon">
-                    <Play aria-hidden="true" />
-                  </span>
-                  <strong>Aula {activeLesson.number}</strong>
-                  <span>O vídeo desta aula será conectado aqui</span>
-                </div>
+                <iframe
+                  key={activeLesson.videoId}
+                  src={`https://player.vimeo.com/video/${activeLesson.videoId}?dnt=1&title=0&byline=0&portrait=0`}
+                  title={`Aula ${activeLesson.number} — ${activeLesson.title}`}
+                  allow="autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media; web-share"
+                  referrerPolicy="strict-origin-when-cross-origin"
+                  allowFullScreen
+                />
               </div>
 
               <div className="course-lesson-copy">
@@ -223,10 +230,32 @@ function CoursePage() {
                     <h2>{activeLesson.title}</h2>
                   </div>
                   <span className="course-duration">
-                    <Clock3 aria-hidden="true" /> {activeLesson.duration}
+                    <Play aria-hidden="true" /> Aula em vídeo
                   </span>
                 </div>
                 <p>{activeLesson.description}</p>
+
+                {activeLesson.resource ? (
+                  <a
+                    className="course-lesson-resource"
+                    href={activeLesson.resource.href}
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    <span className="course-lesson-resource-icon">
+                      {activeLesson.resource.type === "whatsapp" ? (
+                        <MessageCircle aria-hidden="true" />
+                      ) : (
+                        <ExternalLink aria-hidden="true" />
+                      )}
+                    </span>
+                    <span>
+                      <strong>{activeLesson.resource.label}</strong>
+                      <small>{activeLesson.resource.description}</small>
+                    </span>
+                    <ExternalLink aria-hidden="true" />
+                  </a>
+                ) : null}
 
                 <div className="course-lesson-actions">
                   <button
@@ -255,7 +284,7 @@ function CoursePage() {
               <div className="course-module-card">
                 <div className="course-module-heading">
                   <span>Mini curso NEXUM</span>
-                  <strong>5 aulas práticas</strong>
+                  <strong>4 aulas práticas</strong>
                 </div>
 
                 <div className="course-lessons-list">
@@ -275,7 +304,7 @@ function CoursePage() {
                         </span>
                         <span className="course-list-copy">
                           <strong>{lesson.title}</strong>
-                          <small>{lesson.duration}</small>
+                          <small>Aula em vídeo</small>
                         </span>
                         <ChevronRight aria-hidden="true" />
                       </button>
