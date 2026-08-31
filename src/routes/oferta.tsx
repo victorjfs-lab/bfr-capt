@@ -15,7 +15,6 @@ import {
   Sparkles,
   Tag,
   TrendingUp,
-  Users,
 } from "lucide-react";
 import { FormEvent, useState } from "react";
 
@@ -69,9 +68,11 @@ function CheckoutCard({
           {result ? <CheckCircle2 aria-hidden="true" /> : <LockKeyhole aria-hidden="true" />}
         </span>
         <div>
-          <span>{result ? "Cupom aplicado" : "Oferta protegida"}</span>
+          <span>{result ? "Cupom aplicado" : "Tem um cupom?"}</span>
           <strong>
-            {result ? "Seu preço especial foi liberado" : "Use seu cupom para liberar"}
+            {result
+              ? "Seu preço especial foi liberado"
+              : "Use abaixo para liberar sua condição especial"}
           </strong>
         </div>
       </div>
@@ -88,12 +89,12 @@ function CheckoutCard({
           </>
         ) : (
           <>
-            <span className="offer-regular-label">Preço sem cupom</span>
+            <span className="offer-regular-label">Preço normal</span>
             <div className="offer-locked-price">
               <span>R$</span>
-              <strong>189,90</strong>
+              <strong>239,90</strong>
             </div>
-            <small>O valor promocional só aparece após validar o cupom.</small>
+            <small>Garanta valor promocional com cupom.</small>
           </>
         )}
       </div>
@@ -108,7 +109,7 @@ function CheckoutCard({
                 id={id}
                 value={coupon}
                 onChange={(event) => setCoupon(event.target.value)}
-                placeholder="Digite seu cupom"
+                placeholder="DIGITE SEU CUPOM"
                 autoComplete="off"
                 spellCheck="false"
                 required
@@ -191,24 +192,22 @@ function NexumOfferPage() {
               <p className="offer-eyebrow">
                 <Sparkles aria-hidden="true" /> Oferta especial NEXUM
               </p>
-              <h1 id="offer-title">
-                Veja o movimento antes que ele aconteça.
-                <span>Decida com contexto, não com impulso.</span>
-              </h1>
+              <h1 id="offer-title">Entenda o contexto antes de entrar.</h1>
               <p className="offer-hero-lead">
-                O NEXUM transforma pressão compradora, pressão vendedora e contexto de tendência em
-                uma leitura visual clara para você reconhecer melhores regiões de entrada e saída.
+                O NEXUM mostra, direto no gráfico, onde existe pressão compradora, pressão vendedora
+                e força de tendência.
+                <span>
+                  Uma leitura simples para ajudar você a decidir{" "}
+                  <strong>onde entrar, onde sair e quando não operar.</strong>
+                </span>
               </p>
 
               <div className="offer-benefit-line" aria-label="O que está incluído">
                 <span>
-                  <Check aria-hidden="true" /> Pacote com 3 indicadores
+                  <Check aria-hidden="true" /> Indicador NEXUM
                 </span>
                 <span>
                   <Check aria-hidden="true" /> Treinamento de instalação
-                </span>
-                <span>
-                  <Check aria-hidden="true" /> Grupo de estudos
                 </span>
               </div>
 
@@ -282,8 +281,8 @@ function NexumOfferPage() {
                 <span>
                   <BarChart3 aria-hidden="true" />
                 </span>
-                <strong>3 indicadores NEXUM</strong>
-                <p>O pacote completo para pressão, contexto e confirmação visual no gráfico.</p>
+                <strong>Indicador NEXUM</strong>
+                <p>Pressão compradora, pressão vendedora e força da tendência direto no gráfico.</p>
               </article>
               <article>
                 <span>
@@ -291,13 +290,6 @@ function NexumOfferPage() {
                 </span>
                 <strong>Treinamento prático</strong>
                 <p>Aulas para instalar, configurar e entender como aplicar cada ferramenta.</p>
-              </article>
-              <article>
-                <span>
-                  <Users aria-hidden="true" />
-                </span>
-                <strong>Grupo de estudos</strong>
-                <p>Um espaço para acompanhar orientações, dúvidas e evolução operacional.</p>
               </article>
               <article>
                 <span>

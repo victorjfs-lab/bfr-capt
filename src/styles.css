@@ -4306,6 +4306,14 @@ footer {
   font-size: 15px;
   line-height: 1.7;
 }
+.offer-hero-lead > span {
+  display: block;
+  margin-top: 14px;
+}
+.offer-hero-lead strong {
+  color: rgba(255, 255, 255, 0.86);
+  font-weight: 750;
+}
 .offer-benefit-line {
   display: flex;
   flex-wrap: wrap;
@@ -4665,7 +4673,7 @@ footer {
 }
 .offer-included-grid {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 12px;
   margin-top: 42px;
 }

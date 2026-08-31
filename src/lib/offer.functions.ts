@@ -38,7 +38,7 @@ export const validateOfferCoupon = createServerFn({ method: "POST" })
 
     return {
       ok: true as const,
-      originalPrice: "189,90",
+      originalPrice: "239,90",
       promotionalPrice: "119,90",
       checkoutUrl,
     };
