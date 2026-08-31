@@ -2,19 +2,15 @@ import { createFileRoute } from "@tanstack/react-router";
 import {
   ArrowRight,
   BadgeCheck,
-  BarChart3,
   Check,
   CheckCircle2,
   CreditCard,
   Gauge,
-  GraduationCap,
   LockKeyhole,
-  MessageCircle,
   Play,
   ShieldCheck,
   Sparkles,
   Tag,
-  TrendingUp,
 } from "lucide-react";
 import { FormEvent, useState } from "react";
 
@@ -267,143 +263,7 @@ function NexumOfferPage() {
             </div>
           </div>
         </section>
-
-        <section className="offer-included" aria-labelledby="included-title">
-          <div className="offer-container">
-            <div className="offer-section-heading">
-              <p className="offer-eyebrow">Tudo o que você recebe</p>
-              <h2 id="included-title">Uma estrutura completa para começar.</h2>
-              <p>Ferramentas, contexto e orientação reunidos em um único acesso.</p>
-            </div>
-
-            <div className="offer-included-grid">
-              <article>
-                <span>
-                  <BarChart3 aria-hidden="true" />
-                </span>
-                <strong>Indicador NEXUM</strong>
-                <p>Pressão compradora, pressão vendedora e força da tendência direto no gráfico.</p>
-              </article>
-              <article>
-                <span>
-                  <GraduationCap aria-hidden="true" />
-                </span>
-                <strong>Treinamento prático</strong>
-                <p>Aulas para instalar, configurar e entender como aplicar cada ferramenta.</p>
-              </article>
-              <article>
-                <span>
-                  <TrendingUp aria-hidden="true" />
-                </span>
-                <strong>Contexto antes da entrada</strong>
-                <p>Mais clareza para saber quando entrar, quando sair e quando ficar de fora.</p>
-              </article>
-            </div>
-          </div>
-        </section>
-
-        <section className="offer-proof" aria-labelledby="proof-title">
-          <div className="offer-container">
-            <div className="offer-section-heading is-centered">
-              <p className="offer-eyebrow">Simples e eficiente</p>
-              <h2 id="proof-title">O gráfico mostra o preço. O NEXUM mostra o contexto.</h2>
-            </div>
-            <div className="offer-proof-grid">
-              {[
-                {
-                  src: "/nexum-exemplo-1.png",
-                  alt: "NEXUM identificando continuidade compradora",
-                  label: "Continuidade",
-                },
-                {
-                  src: "/nexum-exemplo-2.png",
-                  alt: "NEXUM sinalizando entrada e desenvolvimento do movimento",
-                  label: "Confirmação",
-                },
-                {
-                  src: "/nexum-exemplo-3.png",
-                  alt: "NEXUM exibindo contexto vendedor e reversão",
-                  label: "Mudança de contexto",
-                },
-              ].map((image) => (
-                <figure key={image.src}>
-                  <img src={image.src} alt={image.alt} loading="lazy" />
-                  <figcaption>{image.label}</figcaption>
-                </figure>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        <section className="offer-steps" aria-labelledby="steps-title">
-          <div className="offer-container offer-steps-grid">
-            <div className="offer-section-heading">
-              <p className="offer-eyebrow">Do acesso à aplicação</p>
-              <h2 id="steps-title">Você não recebe apenas um arquivo.</h2>
-              <p>
-                O caminho foi organizado para que você instale as ferramentas e comece a entender a
-                leitura sem depender de tentativa e erro.
-              </p>
-            </div>
-            <ol>
-              <li>
-                <span>01</span>
-                <div>
-                  <strong>Confirme sua compra</strong>
-                  <p>Finalize o pagamento com segurança pela Hotmart.</p>
-                </div>
-              </li>
-              <li>
-                <span>02</span>
-                <div>
-                  <strong>Instale os indicadores</strong>
-                  <p>Siga o treinamento para configurar corretamente o pacote.</p>
-                </div>
-              </li>
-              <li>
-                <span>03</span>
-                <div>
-                  <strong>Leve contexto para o gráfico</strong>
-                  <p>Use a leitura visual como apoio aos seus próprios critérios operacionais.</p>
-                </div>
-              </li>
-            </ol>
-          </div>
-        </section>
-
-        <section className="offer-final" aria-labelledby="final-title">
-          <div className="offer-container offer-final-grid">
-            <div>
-              <p className="offer-eyebrow">
-                <MessageCircle aria-hidden="true" /> Seu cupom está em mãos
-              </p>
-              <h2 id="final-title">Ative a condição especial e comece com o NEXUM.</h2>
-              <p>Digite o mesmo cupom para revelar o preço reservado desta oferta.</p>
-            </div>
-            <CheckoutCard
-              id="final-coupon"
-              coupon={coupon}
-              setCoupon={setCoupon}
-              result={couponResult}
-              error={couponError}
-              loading={loading}
-              onSubmit={applyCoupon}
-            />
-          </div>
-        </section>
       </main>
-
-      <footer className="offer-footer">
-        <div className="offer-container">
-          <img src="/nexum-logo-brand.png" alt="NEXUM — Indicador de Fluxo" />
-          <p>
-            O NEXUM é uma ferramenta educacional de apoio à leitura de mercado. Não oferecemos
-            recomendação de investimento ou promessa de rentabilidade. Operações no mercado
-            financeiro envolvem riscos.
-          </p>
-          <span>© 2026 Garcia Consultoria Financeira e Treinamentos LTDA</span>
-        </div>
-      </footer>
     </div>
   );
 }
