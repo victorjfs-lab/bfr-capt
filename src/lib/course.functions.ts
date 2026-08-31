@@ -1,12 +1,12 @@
 import { createServerFn } from "@tanstack/react-start";
 import { setResponseHeaders } from "@tanstack/react-start/server";
 
+import { authorizeMainAdmin } from "./admin-session.server";
 import {
   approveCourseInvite,
   checkCourseToken,
   createCourseInvite,
   getPublicInvitation,
-  isValidationPasswordValid,
   listCourseRegistrations,
   registerCourseInvite,
 } from "./course.server";
@@ -52,7 +52,7 @@ export const getCourseRegistrations = createServerFn({ method: "POST" })
   .validator(courseAdminAccessSchema)
   .handler(async ({ data }) => {
     disableResponseCache();
-    if (!isValidationPasswordValid(data.password)) throw new Error("Acesso não autorizado.");
+    if (!authorizeMainAdmin(data.password)) throw new Error("Acesso não autorizado.");
     return await listCourseRegistrations();
   });
 
@@ -60,7 +60,7 @@ export const generateCourseInvite = createServerFn({ method: "POST" })
   .validator(courseInviteSchema)
   .handler(async ({ data }) => {
     disableResponseCache();
-    if (!isValidationPasswordValid(data.password)) throw new Error("Acesso não autorizado.");
+    if (!authorizeMainAdmin(data.password)) throw new Error("Acesso não autorizado.");
     return await createCourseInvite(data.email);
   });
 
@@ -68,6 +68,6 @@ export const approveCourseRegistration = createServerFn({ method: "POST" })
   .validator(courseApprovalSchema)
   .handler(async ({ data }) => {
     disableResponseCache();
-    if (!isValidationPasswordValid(data.password)) throw new Error("Acesso não autorizado.");
+    if (!authorizeMainAdmin(data.password)) throw new Error("Acesso não autorizado.");
     return await approveCourseInvite(data.registrationId);
   });

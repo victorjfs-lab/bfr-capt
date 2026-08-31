@@ -18,7 +18,7 @@ import {
   UserPlus,
   Users,
 } from "lucide-react";
-import { FormEvent, useMemo, useState } from "react";
+import { FormEvent, useEffect, useMemo, useState } from "react";
 
 import { approveAdminRegistration, getAdminOverview } from "../lib/dashboard.functions";
 import type { CourseRegistrationRecord } from "../lib/course.schema";
@@ -154,6 +154,7 @@ function AdminOverviewPage() {
   const [password, setPassword] = useState("");
   const [data, setData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(false);
+  const [checkingSession, setCheckingSession] = useState(true);
   const [actionId, setActionId] = useState<number | null>(null);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
@@ -193,6 +194,23 @@ function AdminOverviewPage() {
   }, [data]);
 
   const activity = useMemo(() => (data ? buildActivity(data) : []), [data]);
+
+  useEffect(() => {
+    let active = true;
+
+    getAdminOverview({ data: { password: "" } })
+      .then((overview) => {
+        if (active) setData(overview);
+      })
+      .catch(() => undefined)
+      .finally(() => {
+        if (active) setCheckingSession(false);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, []);
 
   async function loadOverview(accessPassword: string) {
     setLoading(true);
@@ -280,6 +298,24 @@ function AdminOverviewPage() {
     ]);
   }
 
+  if (checkingSession) {
+    return (
+      <main className="admin-page overview-login-page">
+        <section className="admin-login admin-session-check" aria-live="polite">
+          <Link to="/" className="admin-brand">
+            <img src="/nexum-logo-brand.png" alt="NEXUM — Indicador de Fluxo" />
+          </Link>
+          <div className="admin-lock" aria-hidden="true">
+            <LockKeyhole />
+          </div>
+          <p className="admin-eyebrow">Acesso principal</p>
+          <h1>Reconhecendo seu acesso</h1>
+          <p className="admin-login-copy">Verificando a sessão segura deste navegador...</p>
+        </section>
+      </main>
+    );
+  }
+
   if (!data || !stats) {
     return (
       <main className="admin-page overview-login-page">
@@ -297,7 +333,7 @@ function AdminOverviewPage() {
           </p>
           <form className="admin-login-form" onSubmit={handleLogin}>
             <label>
-              <span>Senha administrativa</span>
+              <span>Senha principal</span>
               <input
                 type="password"
                 value={password}

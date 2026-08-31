@@ -7,7 +7,7 @@ const tokenSchema = z
   .regex(/^[a-f0-9]{64}$/i, "Convite inválido.");
 
 export const courseInviteSchema = z.object({
-  password: z.string().min(1).max(200),
+  password: z.string().max(200).default(""),
   email: emailSchema,
 });
 
@@ -22,11 +22,11 @@ export const courseTokenSchema = z.object({
 });
 
 export const courseAdminAccessSchema = z.object({
-  password: z.string().min(1).max(200),
+  password: z.string().max(200).default(""),
 });
 
 export const courseApprovalSchema = z.object({
-  password: z.string().min(1).max(200),
+  password: z.string().max(200).default(""),
   registrationId: z.number().int().positive(),
 });
 

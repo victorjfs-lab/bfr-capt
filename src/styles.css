@@ -1900,6 +1900,21 @@ footer {
   width: 23px;
   height: 23px;
 }
+.admin-session-check .admin-lock {
+  animation: admin-session-pulse 1.4s ease-in-out infinite;
+}
+.admin-session-check h1 {
+  margin: 8px 0 0;
+  font-size: clamp(28px, 3vw, 40px);
+  line-height: 1.08;
+  letter-spacing: -0.045em;
+}
+@keyframes admin-session-pulse {
+  50% {
+    border-color: rgba(177, 111, 255, 0.72);
+    box-shadow: 0 0 28px rgba(152, 81, 244, 0.17);
+  }
+}
 .admin-eyebrow {
   margin: 24px 0 0;
   color: #a65dff;

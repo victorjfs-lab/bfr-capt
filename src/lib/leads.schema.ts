@@ -12,7 +12,7 @@ export const leadInputSchema = z.object({
 });
 
 export const adminAccessSchema = z.object({
-  password: z.string().min(1).max(200),
+  password: z.string().max(200).default(""),
 });
 
 export type LeadInput = z.infer<typeof leadInputSchema>;

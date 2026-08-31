@@ -12,7 +12,7 @@ import {
   ShieldCheck,
   UserCheck,
 } from "lucide-react";
-import { FormEvent, useMemo, useState } from "react";
+import { FormEvent, useEffect, useMemo, useState } from "react";
 
 import {
   approveCourseRegistration,
@@ -65,6 +65,7 @@ function ValidationPage() {
   const [password, setPassword] = useState("");
   const [registrations, setRegistrations] = useState<CourseRegistrationRecord[] | null>(null);
   const [loading, setLoading] = useState(false);
+  const [checkingSession, setCheckingSession] = useState(true);
   const [actionId, setActionId] = useState<number | null>(null);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
@@ -75,6 +76,23 @@ function ValidationPage() {
     () => registrations?.filter((item) => item.status === "pending").length ?? 0,
     [registrations],
   );
+
+  useEffect(() => {
+    let active = true;
+
+    getCourseRegistrations({ data: { password: "" } })
+      .then((result) => {
+        if (active) setRegistrations(result);
+      })
+      .catch(() => undefined)
+      .finally(() => {
+        if (active) setCheckingSession(false);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, []);
 
   function invitationLink(token: string) {
     return `${window.location.origin}/inscricao?convite=${token}`;
@@ -193,6 +211,24 @@ function ValidationPage() {
     URL.revokeObjectURL(url);
   }
 
+  if (checkingSession) {
+    return (
+      <main className="admin-page validation-login-page">
+        <section className="admin-login admin-session-check" aria-live="polite">
+          <Link to="/" className="admin-brand">
+            <img src="/nexum-logo-brand.png" alt="NEXUM — Indicador de Fluxo" />
+          </Link>
+          <div className="admin-lock" aria-hidden="true">
+            <LockKeyhole />
+          </div>
+          <p className="admin-eyebrow">Acesso principal</p>
+          <h1>Reconhecendo seu acesso</h1>
+          <p className="admin-login-copy">Verificando a sessão segura deste navegador...</p>
+        </section>
+      </main>
+    );
+  }
+
   if (!registrations) {
     return (
       <main className="admin-page validation-login-page">
@@ -206,11 +242,11 @@ function ValidationPage() {
           <p className="admin-eyebrow">Área protegida</p>
           <h1 id="validation-login-title">Liberação de acessos</h1>
           <p className="admin-login-copy">
-            Entre com a senha da equipe para gerar convites e liberar alunos.
+            Entre com a senha principal para gerar convites e liberar alunos.
           </p>
           <form className="admin-login-form" onSubmit={handleLogin}>
             <label>
-              <span>Senha de acesso</span>
+              <span>Senha principal</span>
               <input
                 type="password"
                 value={password}

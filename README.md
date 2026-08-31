@@ -45,7 +45,6 @@ deploy da aplicacao:
 
 ```bash
 ADMIN_PASSWORD=uma-senha-forte
-VALIDATION_PASSWORD=uma-senha-para-a-equipe
 DB_HOST=localhost
 DB_PORT=3306
 DB_USER=usuario_do_banco
@@ -53,12 +52,10 @@ DB_PASSWORD=senha_do_banco
 DB_NAME=nome_do_banco
 ```
 
-`ADMIN_PASSWORD` protege a pagina `/inscritos`. A tabela `leads` e criada
-automaticamente no primeiro cadastro ou acesso ao painel. Consulte
-`.env.example`.
-
-`VALIDATION_PASSWORD` protege a pagina `/validacao`. Se nao for definida, a
-pagina usa `ADMIN_PASSWORD`.
+`ADMIN_PASSWORD` e a senha principal das paginas `/admin`, `/inscritos` e
+`/validacao`. Depois do primeiro login, uma sessao segura mantem essas paginas
+autenticadas no mesmo navegador. A tabela `leads` e criada automaticamente no
+primeiro cadastro ou acesso ao painel. Consulte `.env.example`.
 
 ## Formulario
 
@@ -68,8 +65,9 @@ encaminhado para o WhatsApp `+55 51 3376-5598`.
 
 ## Area administrativa
 
-Acesse `/inscritos`, informe a senha definida em `ADMIN_PASSWORD` e consulte,
-pesquise ou exporte a lista de inscritos em CSV.
+Acesse `/admin` com a senha definida em `ADMIN_PASSWORD` para acompanhar a
+operacao completa. As paginas `/inscritos` e `/validacao` compartilham a mesma
+sessao persistente.
 
 ## Convites e mini curso
 

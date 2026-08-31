@@ -1,7 +1,8 @@
 import { createServerFn } from "@tanstack/react-start";
 import { setResponseHeaders } from "@tanstack/react-start/server";
 
-import { insertLead, isAdminPasswordValid, listLeads } from "./leads.server";
+import { authorizeMainAdmin } from "./admin-session.server";
+import { insertLead, listLeads } from "./leads.server";
 import { adminAccessSchema, leadInputSchema } from "./leads.schema";
 
 export const registerLead = createServerFn({ method: "POST" })
@@ -18,7 +19,7 @@ export const getLeads = createServerFn({ method: "POST" })
       }),
     );
 
-    if (!isAdminPasswordValid(data.password)) {
+    if (!authorizeMainAdmin(data.password)) {
       throw new Error("Acesso não autorizado.");
     }
 

@@ -1,4 +1,4 @@
-import { randomBytes, timingSafeEqual } from "node:crypto";
+import { randomBytes } from "node:crypto";
 
 import type { ResultSetHeader, RowDataPacket } from "mysql2/promise";
 
@@ -62,27 +62,6 @@ function normalizeCourseRow(row: Record<string, unknown>): CourseRegistrationRec
     expiresAt,
     accessExpired: expiresAt ? new Date(expiresAt).getTime() <= Date.now() : false,
   };
-}
-
-function safePasswordCompare(candidate: string, expected: string) {
-  const candidateBuffer = Buffer.from(candidate);
-  const expectedBuffer = Buffer.from(expected);
-  return (
-    candidateBuffer.length === expectedBuffer.length &&
-    timingSafeEqual(candidateBuffer, expectedBuffer)
-  );
-}
-
-export function isValidationPasswordValid(candidate: string) {
-  const expected =
-    process.env.VALIDATION_PASSWORD?.trim() || process.env.ADMIN_PASSWORD?.trim() || "";
-
-  if (!expected) {
-    if (process.env.NODE_ENV === "production") return false;
-    return candidate === "nexum-admin";
-  }
-
-  return safePasswordCompare(candidate, expected);
 }
 
 async function ensureCourseTable() {

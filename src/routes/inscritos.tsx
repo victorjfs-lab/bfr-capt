@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Download, LockKeyhole, RefreshCw, Search, Users } from "lucide-react";
-import { FormEvent, useMemo, useState } from "react";
+import { FormEvent, useEffect, useMemo, useState } from "react";
 
 import { getLeads } from "../lib/leads.functions";
 import type { LeadRecord } from "../lib/leads.schema";
@@ -28,6 +28,7 @@ function LeadsAdmin() {
   const [query, setQuery] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [checkingSession, setCheckingSession] = useState(true);
 
   const filteredLeads = useMemo(() => {
     if (!leads) return [];
@@ -40,6 +41,23 @@ function LeadsAdmin() {
       ),
     );
   }, [leads, query]);
+
+  useEffect(() => {
+    let active = true;
+
+    getLeads({ data: { password: "" } })
+      .then((result) => {
+        if (active) setLeads(result);
+      })
+      .catch(() => undefined)
+      .finally(() => {
+        if (active) setCheckingSession(false);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, []);
 
   async function loadLeads(accessPassword: string) {
     setError("");
@@ -81,6 +99,24 @@ function LeadsAdmin() {
     URL.revokeObjectURL(url);
   }
 
+  if (checkingSession) {
+    return (
+      <main className="admin-page">
+        <section className="admin-login admin-session-check" aria-live="polite">
+          <Link to="/" className="admin-brand">
+            <img src="/nexum-logo-brand.png" alt="NEXUM — Indicador de Fluxo" />
+          </Link>
+          <div className="admin-lock" aria-hidden="true">
+            <LockKeyhole />
+          </div>
+          <p className="admin-eyebrow">Acesso principal</p>
+          <h1>Reconhecendo seu acesso</h1>
+          <p className="admin-login-copy">Verificando a sessão segura deste navegador...</p>
+        </section>
+      </main>
+    );
+  }
+
   if (!leads) {
     return (
       <main className="admin-page">
@@ -97,7 +133,7 @@ function LeadsAdmin() {
 
           <form onSubmit={handleLogin} className="admin-login-form">
             <label>
-              <span>Senha de acesso</span>
+              <span>Senha principal</span>
               <input
                 type="password"
                 value={password}
