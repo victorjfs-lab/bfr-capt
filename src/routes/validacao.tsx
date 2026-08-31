@@ -4,6 +4,7 @@ import {
   CheckCircle2,
   Clipboard,
   Clock3,
+  Download,
   Link2,
   LockKeyhole,
   RefreshCw,
@@ -35,6 +36,21 @@ const statusLabels = {
   pending: "Aguardando liberação",
   approved: "Acesso liberado",
 } as const;
+
+const validationDateFormatter = new Intl.DateTimeFormat("pt-BR", {
+  dateStyle: "short",
+  timeStyle: "short",
+});
+
+function formatValidationDate(value: string | null) {
+  return value ? validationDateFormatter.format(new Date(value)) : "";
+}
+
+function csvCell(value: string | number) {
+  let safeValue = String(value);
+  if (/^[=+\-@]/.test(safeValue)) safeValue = `'${safeValue}`;
+  return `"${safeValue.replaceAll('"', '""')}"`;
+}
 
 function ValidationPage() {
   const [password, setPassword] = useState("");
@@ -132,6 +148,38 @@ function ValidationPage() {
     }
   }
 
+  function exportSpreadsheet() {
+    if (!registrations) return;
+
+    const rows = [
+      [
+        "ID",
+        "Nome",
+        "E-mail",
+        "Status",
+        "Convite criado em",
+        "Cadastro confirmado em",
+        "Acesso liberado em",
+      ],
+      ...registrations.map((registration) => [
+        registration.id,
+        registration.name,
+        registration.email,
+        statusLabels[registration.status],
+        formatValidationDate(registration.createdAt),
+        formatValidationDate(registration.registeredAt),
+        formatValidationDate(registration.approvedAt),
+      ]),
+    ];
+    const csv = `\uFEFFsep=;\n${rows.map((row) => row.map(csvCell).join(";")).join("\n")}`;
+    const url = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8" }));
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `acessos-nexum-${new Date().toISOString().slice(0, 10)}.csv`;
+    link.click();
+    URL.revokeObjectURL(url);
+  }
+
   if (!registrations) {
     return (
       <main className="admin-page validation-login-page">
@@ -180,14 +228,24 @@ function ValidationPage() {
             <p className="admin-eyebrow">Operação simplificada</p>
             <h1>Liberação de acessos</h1>
           </div>
-          <button
-            type="button"
-            className="admin-secondary-button"
-            onClick={() => loadRegistrations(password)}
-            disabled={loading}
-          >
-            <RefreshCw aria-hidden="true" /> Atualizar
-          </button>
+          <div className="validation-header-actions">
+            <button
+              type="button"
+              className="admin-secondary-button"
+              onClick={exportSpreadsheet}
+              disabled={registrations.length === 0}
+            >
+              <Download aria-hidden="true" /> Exportar planilha
+            </button>
+            <button
+              type="button"
+              className="admin-secondary-button"
+              onClick={() => loadRegistrations(password)}
+              disabled={loading}
+            >
+              <RefreshCw aria-hidden="true" /> Atualizar
+            </button>
+          </div>
         </header>
 
         <section className="validation-summary" aria-label="Resumo das validações">
