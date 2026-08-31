@@ -45,6 +45,7 @@ deploy da aplicacao:
 
 ```bash
 ADMIN_PASSWORD=uma-senha-forte
+VALIDATION_PASSWORD=uma-senha-para-a-equipe
 DB_HOST=localhost
 DB_PORT=3306
 DB_USER=usuario_do_banco
@@ -56,6 +57,9 @@ DB_NAME=nome_do_banco
 automaticamente no primeiro cadastro ou acesso ao painel. Consulte
 `.env.example`.
 
+`VALIDATION_PASSWORD` protege a pagina `/validacao`. Se nao for definida, a
+pagina usa `ADMIN_PASSWORD`.
+
 ## Formulario
 
 O formulario salva Nome, WhatsApp e E-mail no MySQL da Hostinger em producao e
@@ -66,3 +70,16 @@ encaminhado para o WhatsApp `+55 51 3376-5598`.
 
 Acesse `/inscritos`, informe a senha definida em `ADMIN_PASSWORD` e consulte,
 pesquise ou exporte a lista de inscritos em CSV.
+
+## Convites e mini curso
+
+O fluxo de entrega usa tres paginas:
+
+- `/validacao`: a equipe informa o e-mail captado na landing page e gera um
+  link individual protegido. Depois libera o acesso do aluno com um clique.
+- `/inscricao?convite=TOKEN`: o cliente confirma nome e o mesmo e-mail usado na
+  landing page.
+- `/curso?convite=TOKEN`: o treinamento so abre quando o convite esta aprovado.
+
+Se o e-mail nao existir na landing page ou divergir na inscricao protegida, o
+sistema retorna `Usuário não encontrado, confirmar E-mail.`.

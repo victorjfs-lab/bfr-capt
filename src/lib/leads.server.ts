@@ -19,7 +19,7 @@ type MysqlLeadRow = RowDataPacket & {
   createdAt: string;
 };
 
-function hasMysqlConfiguration() {
+export function hasMysqlConfiguration() {
   const connectionUrl = process.env.DATABASE_URL?.trim();
   if (connectionUrl) {
     if (!connectionUrl.toLowerCase().startsWith("mysql://")) {
@@ -79,7 +79,7 @@ async function createMysqlDatabase() {
   return pool;
 }
 
-function getMysqlDatabase() {
+export function getMysqlDatabase() {
   const globalScope = globalThis as LeadsGlobal;
   globalScope.__nexumLeadsMysql ??= createMysqlDatabase();
   return globalScope.__nexumLeadsMysql;
@@ -114,7 +114,7 @@ function createDatabase() {
   return database;
 }
 
-function getDatabase() {
+export function getDatabase() {
   const globalScope = globalThis as LeadsGlobal;
   globalScope.__nexumLeadsDb ??= createDatabase();
   return globalScope.__nexumLeadsDb;
