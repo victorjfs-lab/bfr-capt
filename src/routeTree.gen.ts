@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as ValidacaoRouteImport } from './routes/validacao'
+import { Route as OfertaRouteImport } from './routes/oferta'
 import { Route as InscritosRouteImport } from './routes/inscritos'
 import { Route as InscricaoRouteImport } from './routes/inscricao'
 import { Route as CursoRouteImport } from './routes/curso'
@@ -20,6 +21,11 @@ import { Route as ApiIndicadoresRouteImport } from './routes/api/indicadores'
 const ValidacaoRoute = ValidacaoRouteImport.update({
   id: '/validacao',
   path: '/validacao',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const OfertaRoute = OfertaRouteImport.update({
+  id: '/oferta',
+  path: '/oferta',
   getParentRoute: () => rootRouteImport,
 } as any)
 const InscritosRoute = InscritosRouteImport.update({
@@ -59,6 +65,7 @@ export interface FileRoutesByFullPath {
   '/curso': typeof CursoRoute
   '/inscricao': typeof InscricaoRoute
   '/inscritos': typeof InscritosRoute
+  '/oferta': typeof OfertaRoute
   '/validacao': typeof ValidacaoRoute
   '/api/indicadores': typeof ApiIndicadoresRoute
 }
@@ -68,6 +75,7 @@ export interface FileRoutesByTo {
   '/curso': typeof CursoRoute
   '/inscricao': typeof InscricaoRoute
   '/inscritos': typeof InscritosRoute
+  '/oferta': typeof OfertaRoute
   '/validacao': typeof ValidacaoRoute
   '/api/indicadores': typeof ApiIndicadoresRoute
 }
@@ -78,6 +86,7 @@ export interface FileRoutesById {
   '/curso': typeof CursoRoute
   '/inscricao': typeof InscricaoRoute
   '/inscritos': typeof InscritosRoute
+  '/oferta': typeof OfertaRoute
   '/validacao': typeof ValidacaoRoute
   '/api/indicadores': typeof ApiIndicadoresRoute
 }
@@ -89,6 +98,7 @@ export interface FileRouteTypes {
     | '/curso'
     | '/inscricao'
     | '/inscritos'
+    | '/oferta'
     | '/validacao'
     | '/api/indicadores'
   fileRoutesByTo: FileRoutesByTo
@@ -98,6 +108,7 @@ export interface FileRouteTypes {
     | '/curso'
     | '/inscricao'
     | '/inscritos'
+    | '/oferta'
     | '/validacao'
     | '/api/indicadores'
   id:
@@ -107,6 +118,7 @@ export interface FileRouteTypes {
     | '/curso'
     | '/inscricao'
     | '/inscritos'
+    | '/oferta'
     | '/validacao'
     | '/api/indicadores'
   fileRoutesById: FileRoutesById
@@ -117,6 +129,7 @@ export interface RootRouteChildren {
   CursoRoute: typeof CursoRoute
   InscricaoRoute: typeof InscricaoRoute
   InscritosRoute: typeof InscritosRoute
+  OfertaRoute: typeof OfertaRoute
   ValidacaoRoute: typeof ValidacaoRoute
   ApiIndicadoresRoute: typeof ApiIndicadoresRoute
 }
@@ -128,6 +141,13 @@ declare module '@tanstack/react-router' {
       path: '/validacao'
       fullPath: '/validacao'
       preLoaderRoute: typeof ValidacaoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/oferta': {
+      id: '/oferta'
+      path: '/oferta'
+      fullPath: '/oferta'
+      preLoaderRoute: typeof OfertaRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/inscritos': {
@@ -181,6 +201,7 @@ const rootRouteChildren: RootRouteChildren = {
   CursoRoute: CursoRoute,
   InscricaoRoute: InscricaoRoute,
   InscritosRoute: InscritosRoute,
+  OfertaRoute: OfertaRoute,
   ValidacaoRoute: ValidacaoRoute,
   ApiIndicadoresRoute: ApiIndicadoresRoute,
 }
