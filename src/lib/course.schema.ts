@@ -41,6 +41,8 @@ export type CourseRegistrationRecord = {
   createdAt: string;
   registeredAt: string | null;
   approvedAt: string | null;
+  expiresAt: string | null;
+  accessExpired: boolean;
 };
 
 export type CoursePublicInvitation = {

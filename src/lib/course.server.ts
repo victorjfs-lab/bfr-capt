@@ -11,6 +11,8 @@ import type {
 import { getDatabase, getMysqlDatabase, hasMysqlConfiguration } from "./leads.server";
 
 const notFoundMessage = "Usuário não encontrado, confirmar E-mail.";
+export const courseAccessDays = 25;
+const dayInMilliseconds = 24 * 60 * 60 * 1000;
 
 type LeadIdentity = {
   name: string;
@@ -32,9 +34,21 @@ function normalizeEmail(email: string) {
   return email.trim().toLowerCase();
 }
 
+function courseExpirationDate(approvedAt: string | null) {
+  if (!approvedAt) return null;
+
+  const approvedTimestamp = new Date(approvedAt).getTime();
+  if (!Number.isFinite(approvedTimestamp)) return null;
+
+  return new Date(approvedTimestamp + courseAccessDays * dayInMilliseconds).toISOString();
+}
+
 function normalizeCourseRow(row: Record<string, unknown>): CourseRegistrationRecord {
   const status: CourseInviteStatus =
     row.status === "approved" ? "approved" : row.status === "pending" ? "pending" : "invited";
+
+  const approvedAt = row.approvedAt ? String(row.approvedAt) : null;
+  const expiresAt = courseExpirationDate(approvedAt);
 
   return {
     id: Number(row.id),
@@ -44,7 +58,9 @@ function normalizeCourseRow(row: Record<string, unknown>): CourseRegistrationRec
     status,
     createdAt: String(row.createdAt),
     registeredAt: row.registeredAt ? String(row.registeredAt) : null,
-    approvedAt: row.approvedAt ? String(row.approvedAt) : null,
+    approvedAt,
+    expiresAt,
+    accessExpired: expiresAt ? new Date(expiresAt).getTime() <= Date.now() : false,
   };
 }
 
@@ -370,6 +386,10 @@ export async function checkCourseToken(token: string): Promise<CourseActionResul
 
   if (registration.status === "pending") {
     return { ok: false, message: "Seu acesso ainda está aguardando liberação." };
+  }
+
+  if (registration.accessExpired) {
+    return { ok: false, message: "Seu período de 25 dias de acesso foi encerrado." };
   }
 
   return {

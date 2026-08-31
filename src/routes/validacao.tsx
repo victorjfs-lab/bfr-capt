@@ -46,6 +46,15 @@ function formatValidationDate(value: string | null) {
   return value ? validationDateFormatter.format(new Date(value)) : "";
 }
 
+function daysUntil(value: string | null) {
+  if (!value) return 0;
+  return Math.max(0, Math.ceil((new Date(value).getTime() - Date.now()) / 86_400_000));
+}
+
+function registrationStatusLabel(registration: CourseRegistrationRecord) {
+  return registration.accessExpired ? "Acesso expirado" : statusLabels[registration.status];
+}
+
 function csvCell(value: string | number) {
   let safeValue = String(value);
   if (/^[=+\-@]/.test(safeValue)) safeValue = `'${safeValue}`;
@@ -139,7 +148,7 @@ function ValidationPage() {
         return;
       }
 
-      setSuccess(`Acesso de ${result.name} liberado com sucesso.`);
+      setSuccess(`Acesso de ${result.name} liberado por 25 dias.`);
       await loadRegistrations(password);
     } catch {
       setError("Não foi possível liberar este acesso.");
@@ -160,15 +169,19 @@ function ValidationPage() {
         "Convite criado em",
         "Cadastro confirmado em",
         "Acesso liberado em",
+        "Acesso vence em",
+        "Dias restantes",
       ],
       ...registrations.map((registration) => [
         registration.id,
         registration.name,
         registration.email,
-        statusLabels[registration.status],
+        registrationStatusLabel(registration),
         formatValidationDate(registration.createdAt),
         formatValidationDate(registration.registeredAt),
         formatValidationDate(registration.approvedAt),
+        formatValidationDate(registration.expiresAt),
+        registration.status === "approved" ? daysUntil(registration.expiresAt) : "",
       ]),
     ];
     const csv = `\uFEFFsep=;\n${rows.map((row) => row.map(csvCell).join(";")).join("\n")}`;
@@ -305,18 +318,30 @@ function ValidationPage() {
           <div className="validation-section-copy">
             <span className="admin-eyebrow">Passo 2</span>
             <h2 id="validation-list-title">Liberar acessos</h2>
-            <p>Quando o cliente concluir o cadastro, basta clicar em liberar.</p>
+            <p>
+              Quando o cliente concluir o cadastro, clique em liberar. Os 25 dias começam nesse
+              momento.
+            </p>
           </div>
 
           <div className="validation-rows">
             {registrations.map((registration) => (
               <article className="validation-row" key={registration.id}>
-                <span className={`validation-status is-${registration.status}`}>
-                  {statusLabels[registration.status]}
+                <span
+                  className={`validation-status is-${registration.accessExpired ? "expired" : registration.status}`}
+                >
+                  {registrationStatusLabel(registration)}
                 </span>
                 <div className="validation-person">
                   <strong>{registration.name}</strong>
                   <span>{registration.email}</span>
+                  {registration.status === "approved" ? (
+                    <small>
+                      {registration.accessExpired
+                        ? `Expirou em ${formatValidationDate(registration.expiresAt)}`
+                        : `${daysUntil(registration.expiresAt)} dias restantes · vence em ${formatValidationDate(registration.expiresAt)}`}
+                    </small>
+                  ) : null}
                 </div>
                 <div className="validation-row-actions">
                   <button
@@ -337,9 +362,14 @@ function ValidationPage() {
                       {actionId === registration.id ? "LIBERANDO..." : "LIBERAR ACESSO"}
                     </button>
                   ) : null}
-                  {registration.status === "approved" ? (
+                  {registration.status === "approved" && !registration.accessExpired ? (
                     <span className="validation-approved-label">
-                      <CheckCircle2 aria-hidden="true" /> Liberado
+                      <CheckCircle2 aria-hidden="true" /> Ativo
+                    </span>
+                  ) : null}
+                  {registration.accessExpired ? (
+                    <span className="validation-expired-label">
+                      <Clock3 aria-hidden="true" /> Expirado
                     </span>
                   ) : null}
                 </div>

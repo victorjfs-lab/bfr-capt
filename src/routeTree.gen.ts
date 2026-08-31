@@ -13,6 +13,7 @@ import { Route as ValidacaoRouteImport } from './routes/validacao'
 import { Route as InscritosRouteImport } from './routes/inscritos'
 import { Route as InscricaoRouteImport } from './routes/inscricao'
 import { Route as CursoRouteImport } from './routes/curso'
+import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ApiIndicadoresRouteImport } from './routes/api/indicadores'
 
@@ -36,6 +37,11 @@ const CursoRoute = CursoRouteImport.update({
   path: '/curso',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminRoute = AdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
@@ -49,6 +55,7 @@ const ApiIndicadoresRoute = ApiIndicadoresRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/admin': typeof AdminRoute
   '/curso': typeof CursoRoute
   '/inscricao': typeof InscricaoRoute
   '/inscritos': typeof InscritosRoute
@@ -57,6 +64,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/admin': typeof AdminRoute
   '/curso': typeof CursoRoute
   '/inscricao': typeof InscricaoRoute
   '/inscritos': typeof InscritosRoute
@@ -66,6 +74,7 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/admin': typeof AdminRoute
   '/curso': typeof CursoRoute
   '/inscricao': typeof InscricaoRoute
   '/inscritos': typeof InscritosRoute
@@ -76,6 +85,7 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/admin'
     | '/curso'
     | '/inscricao'
     | '/inscritos'
@@ -84,6 +94,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/admin'
     | '/curso'
     | '/inscricao'
     | '/inscritos'
@@ -92,6 +103,7 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/admin'
     | '/curso'
     | '/inscricao'
     | '/inscritos'
@@ -101,6 +113,7 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AdminRoute: typeof AdminRoute
   CursoRoute: typeof CursoRoute
   InscricaoRoute: typeof InscricaoRoute
   InscritosRoute: typeof InscritosRoute
@@ -138,6 +151,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CursoRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin': {
+      id: '/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AdminRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -157,6 +177,7 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AdminRoute: AdminRoute,
   CursoRoute: CursoRoute,
   InscricaoRoute: InscricaoRoute,
   InscritosRoute: InscritosRoute,
