@@ -40,6 +40,7 @@ const lessons = [
     title: "Comece por aqui",
     description: "Visão geral do treinamento e o caminho mais rápido para começar.",
     videoId: "1222710808",
+    poster: "/nexum-curso-aula-1-cover.png",
     resource: {
       href: "https://chat.whatsapp.com/HpdmeM4P98a6TCQJIyk3cZ",
       label: "Entrar no grupo de estudos",
@@ -79,6 +80,7 @@ function CoursePage() {
   const [accessMessage, setAccessMessage] = useState("");
   const [studentName, setStudentName] = useState("");
   const [selectedLesson, setSelectedLesson] = useState(0);
+  const [playingLesson, setPlayingLesson] = useState<number | null>(null);
   const [completedLessons, setCompletedLessons] = useState<number[]>([]);
 
   useEffect(() => {
@@ -213,14 +215,25 @@ function CoursePage() {
           <div className="course-container course-layout">
             <div className="course-player-column">
               <div className="course-player-frame">
-                <iframe
-                  key={activeLesson.videoId}
-                  src={`https://player.vimeo.com/video/${activeLesson.videoId}?dnt=1&title=0&byline=0&portrait=0`}
-                  title={`Aula ${activeLesson.number} — ${activeLesson.title}`}
-                  allow="autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media; web-share"
-                  referrerPolicy="strict-origin-when-cross-origin"
-                  allowFullScreen
-                />
+                {activeLesson.poster && playingLesson !== activeLesson.number ? (
+                  <button
+                    className="course-player-cover"
+                    type="button"
+                    onClick={() => setPlayingLesson(activeLesson.number)}
+                    aria-label={`Assistir à Aula ${activeLesson.number}: ${activeLesson.title}`}
+                  >
+                    <img src={activeLesson.poster} alt="" />
+                  </button>
+                ) : (
+                  <iframe
+                    key={activeLesson.videoId}
+                    src={`https://player.vimeo.com/video/${activeLesson.videoId}?dnt=1&title=0&byline=0&portrait=0${playingLesson === activeLesson.number ? "&autoplay=1" : ""}`}
+                    title={`Aula ${activeLesson.number} — ${activeLesson.title}`}
+                    allow="autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media; web-share"
+                    referrerPolicy="strict-origin-when-cross-origin"
+                    allowFullScreen
+                  />
+                )}
               </div>
 
               <div className="course-lesson-copy">
@@ -271,7 +284,10 @@ function CoursePage() {
                     <button
                       className="course-next-button"
                       type="button"
-                      onClick={() => setSelectedLesson((current) => current + 1)}
+                      onClick={() => {
+                        setSelectedLesson((current) => current + 1);
+                        setPlayingLesson(null);
+                      }}
                     >
                       Próxima aula <ChevronRight aria-hidden="true" />
                     </button>
@@ -296,7 +312,10 @@ function CoursePage() {
                       <button
                         className={`${isActive ? "is-active" : ""} ${isComplete ? "is-complete" : ""}`}
                         type="button"
-                        onClick={() => setSelectedLesson(index)}
+                        onClick={() => {
+                          setSelectedLesson(index);
+                          setPlayingLesson(null);
+                        }}
                         key={lesson.number}
                       >
                         <span className="course-list-number">
