@@ -61,7 +61,7 @@ primeiro cadastro ou acesso ao painel. Consulte `.env.example`.
 
 O formulario salva Nome, WhatsApp e E-mail no MySQL da Hostinger em producao e
 em SQLite durante o desenvolvimento local. Depois do cadastro, o visitante e
-encaminhado para o WhatsApp `+55 51 3376-5598`.
+encaminhado para o WhatsApp `+55 41 9192-0291`.
 
 ## Area administrativa
 
@@ -81,3 +81,20 @@ O fluxo de entrega usa tres paginas:
 
 Se o e-mail nao existir na landing page ou divergir na inscricao protegida, o
 sistema retorna `Usuário não encontrado, confirmar E-mail.`.
+
+## Entrega automatica da compra Hotmart
+
+Cadastre na Hotmart o webhook abaixo, versao `2.0.0`, para os eventos de compra
+aprovada, compra completa, cancelamento, reembolso e chargeback:
+
+```text
+https://nexum.fluxosimplificado.com/api/hotmart
+```
+
+O webhook valida o `X-HOTMART-HOTTOK`, registra a transacao no banco e envia ao
+comprador um link individual para baixar o indicador. Eventos de cancelamento,
+reembolso e chargeback revogam o download. Configure no deploy da Hostinger as
+variaveis `HOTMART_HOTTOK`, `PUBLIC_SITE_URL`, `SMTP_HOST`, `SMTP_PORT`,
+`SMTP_SECURE`, `SMTP_USER`, `SMTP_PASSWORD`, `SMTP_FROM_NAME` e
+`SMTP_FROM_EMAIL`. `HOTMART_PRODUCT_ID` e opcional e restringe a entrega a um
+produto especifico.

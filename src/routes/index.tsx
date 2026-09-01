@@ -33,7 +33,7 @@ function Index() {
 
     try {
       await registerLead({ data: lead });
-      window.location.assign(`https://wa.me/555133765598?text=${encodeURIComponent(message)}`);
+      window.location.assign(`https://wa.me/554191920291?text=${encodeURIComponent(message)}`);
     } catch {
       setFormError("Não foi possível salvar seus dados. Confira os campos e tente novamente.");
       setIsSubmitting(false);

@@ -17,6 +17,8 @@ import { Route as CursoRouteImport } from './routes/curso'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ApiIndicadoresRouteImport } from './routes/api/indicadores'
+import { Route as ApiHotmartRouteImport } from './routes/api/hotmart'
+import { Route as ApiCompraArquivoRouteImport } from './routes/api/compra/arquivo'
 
 const ValidacaoRoute = ValidacaoRouteImport.update({
   id: '/validacao',
@@ -58,6 +60,16 @@ const ApiIndicadoresRoute = ApiIndicadoresRouteImport.update({
   path: '/api/indicadores',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiHotmartRoute = ApiHotmartRouteImport.update({
+  id: '/api/hotmart',
+  path: '/api/hotmart',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiCompraArquivoRoute = ApiCompraArquivoRouteImport.update({
+  id: '/api/compra/arquivo',
+  path: '/api/compra/arquivo',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -67,7 +79,9 @@ export interface FileRoutesByFullPath {
   '/inscritos': typeof InscritosRoute
   '/oferta': typeof OfertaRoute
   '/validacao': typeof ValidacaoRoute
+  '/api/hotmart': typeof ApiHotmartRoute
   '/api/indicadores': typeof ApiIndicadoresRoute
+  '/api/compra/arquivo': typeof ApiCompraArquivoRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -77,7 +91,9 @@ export interface FileRoutesByTo {
   '/inscritos': typeof InscritosRoute
   '/oferta': typeof OfertaRoute
   '/validacao': typeof ValidacaoRoute
+  '/api/hotmart': typeof ApiHotmartRoute
   '/api/indicadores': typeof ApiIndicadoresRoute
+  '/api/compra/arquivo': typeof ApiCompraArquivoRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -88,7 +104,9 @@ export interface FileRoutesById {
   '/inscritos': typeof InscritosRoute
   '/oferta': typeof OfertaRoute
   '/validacao': typeof ValidacaoRoute
+  '/api/hotmart': typeof ApiHotmartRoute
   '/api/indicadores': typeof ApiIndicadoresRoute
+  '/api/compra/arquivo': typeof ApiCompraArquivoRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -100,7 +118,9 @@ export interface FileRouteTypes {
     | '/inscritos'
     | '/oferta'
     | '/validacao'
+    | '/api/hotmart'
     | '/api/indicadores'
+    | '/api/compra/arquivo'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -110,7 +130,9 @@ export interface FileRouteTypes {
     | '/inscritos'
     | '/oferta'
     | '/validacao'
+    | '/api/hotmart'
     | '/api/indicadores'
+    | '/api/compra/arquivo'
   id:
     | '__root__'
     | '/'
@@ -120,7 +142,9 @@ export interface FileRouteTypes {
     | '/inscritos'
     | '/oferta'
     | '/validacao'
+    | '/api/hotmart'
     | '/api/indicadores'
+    | '/api/compra/arquivo'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -131,7 +155,9 @@ export interface RootRouteChildren {
   InscritosRoute: typeof InscritosRoute
   OfertaRoute: typeof OfertaRoute
   ValidacaoRoute: typeof ValidacaoRoute
+  ApiHotmartRoute: typeof ApiHotmartRoute
   ApiIndicadoresRoute: typeof ApiIndicadoresRoute
+  ApiCompraArquivoRoute: typeof ApiCompraArquivoRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -192,6 +218,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiIndicadoresRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/hotmart': {
+      id: '/api/hotmart'
+      path: '/api/hotmart'
+      fullPath: '/api/hotmart'
+      preLoaderRoute: typeof ApiHotmartRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/compra/arquivo': {
+      id: '/api/compra/arquivo'
+      path: '/api/compra/arquivo'
+      fullPath: '/api/compra/arquivo'
+      preLoaderRoute: typeof ApiCompraArquivoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -203,7 +243,9 @@ const rootRouteChildren: RootRouteChildren = {
   InscritosRoute: InscritosRoute,
   OfertaRoute: OfertaRoute,
   ValidacaoRoute: ValidacaoRoute,
+  ApiHotmartRoute: ApiHotmartRoute,
   ApiIndicadoresRoute: ApiIndicadoresRoute,
+  ApiCompraArquivoRoute: ApiCompraArquivoRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
