@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import {
   Activity,
+  AlertTriangle,
   ArrowRight,
   CalendarClock,
   CheckCircle2,
@@ -10,6 +11,8 @@ import {
   Link2,
   LockKeyhole,
   Mail,
+  MessageCircle,
+  Phone,
   RefreshCw,
   ShieldCheck,
   Sparkles,
@@ -20,6 +23,7 @@ import {
 } from "lucide-react";
 import { FormEvent, useEffect, useMemo, useState } from "react";
 
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "../components/ui/tabs";
 import { approveAdminRegistration, getAdminOverview } from "../lib/dashboard.functions";
 import type { CourseRegistrationRecord } from "../lib/course.schema";
 import type { LeadRecord } from "../lib/leads.schema";
@@ -47,6 +51,22 @@ type ActivityItem = {
   date: string;
 };
 
+type ExpirationClient = {
+  registration: CourseRegistrationRecord;
+  name: string;
+  email: string;
+  whatsapp: string;
+  activeDays: number;
+  daysRemaining: number;
+  waitingDays: number;
+  expiredDays: number;
+  contactNow: boolean;
+};
+
+const accessDays = 25;
+const contactStartDay = 15;
+const dayInMilliseconds = 86_400_000;
+
 const dateFormatter = new Intl.DateTimeFormat("pt-BR", {
   dateStyle: "short",
   timeStyle: "short",
@@ -65,7 +85,30 @@ function formatDate(value: string | null, compact = false) {
 
 function daysUntil(value: string | null) {
   if (!value) return 0;
-  return Math.max(0, Math.ceil((new Date(value).getTime() - Date.now()) / 86_400_000));
+  return Math.max(0, Math.ceil((new Date(value).getTime() - Date.now()) / dayInMilliseconds));
+}
+
+function daysActive(value: string | null) {
+  if (!value) return 0;
+  const approvedAt = new Date(value).getTime();
+  if (approvedAt > Date.now()) return 0;
+  const elapsed = Math.floor((Date.now() - approvedAt) / dayInMilliseconds);
+  return Math.min(accessDays, Math.max(1, elapsed + 1));
+}
+
+function daysExpired(value: string | null) {
+  if (!value || new Date(value).getTime() > Date.now()) return 0;
+  return Math.max(1, Math.floor((Date.now() - new Date(value).getTime()) / dayInMilliseconds));
+}
+
+function normalizeEmail(value: string) {
+  return value.trim().toLocaleLowerCase("pt-BR");
+}
+
+function whatsappNumber(value: string) {
+  const digits = value.replace(/\D/g, "");
+  if (digits.length === 10 || digits.length === 11) return `55${digits}`;
+  return digits;
 }
 
 function percentage(value: number, total: number) {
@@ -195,6 +238,61 @@ function AdminOverviewPage() {
 
   const activity = useMemo(() => (data ? buildActivity(data) : []), [data]);
 
+  const expirationClients = useMemo<ExpirationClient[]>(() => {
+    if (!data) return [];
+
+    const leadsByEmail = new Map<string, LeadRecord>();
+    data.leads.forEach((lead) => {
+      const email = normalizeEmail(lead.email);
+      if (!leadsByEmail.has(email)) leadsByEmail.set(email, lead);
+    });
+
+    return data.registrations
+      .filter(
+        (registration) =>
+          registration.status === "approved" &&
+          Boolean(registration.approvedAt) &&
+          Boolean(registration.expiresAt),
+      )
+      .map((registration) => {
+        const lead = leadsByEmail.get(normalizeEmail(registration.email));
+        const activeDays = daysActive(registration.approvedAt);
+
+        return {
+          registration,
+          name: registration.name || lead?.name || "Cliente NEXUM",
+          email: registration.email,
+          whatsapp: lead?.whatsapp ?? "",
+          activeDays,
+          daysRemaining: daysUntil(registration.expiresAt),
+          waitingDays: Math.max(0, contactStartDay - activeDays),
+          expiredDays: daysExpired(registration.expiresAt),
+          contactNow: !registration.accessExpired && activeDays >= contactStartDay,
+        };
+      })
+      .sort((clientA, clientB) => {
+        const priorityA = clientA.contactNow ? 0 : clientA.registration.accessExpired ? 2 : 1;
+        const priorityB = clientB.contactNow ? 0 : clientB.registration.accessExpired ? 2 : 1;
+        if (priorityA !== priorityB) return priorityA - priorityB;
+
+        const expirationA = new Date(clientA.registration.expiresAt ?? 0).getTime();
+        const expirationB = new Date(clientB.registration.expiresAt ?? 0).getTime();
+        return priorityA === 2 ? expirationB - expirationA : expirationA - expirationB;
+      });
+  }, [data]);
+
+  const expirationStats = useMemo(() => {
+    const active = expirationClients.filter((client) => !client.registration.accessExpired);
+    return {
+      active: active.length,
+      contactNow: active.filter((client) => client.contactNow).length,
+      nextThreeDays: active.filter(
+        (client) => !client.contactNow && client.waitingDays > 0 && client.waitingDays <= 3,
+      ).length,
+      expired: expirationClients.filter((client) => client.registration.accessExpired).length,
+    };
+  }, [expirationClients]);
+
   useEffect(() => {
     let active = true;
 
@@ -298,6 +396,17 @@ function AdminOverviewPage() {
     ]);
   }
 
+  function renewalWhatsappLink(client: ExpirationClient) {
+    const number = whatsappNumber(client.whatsapp);
+    if (!number) return "";
+
+    const firstName = client.name.trim().split(/\s+/)[0] || "Trader";
+    const message = client.registration.accessExpired
+      ? `Olá, ${firstName}! Seu período de acesso ao NEXUM foi concluído. Posso te ajudar a continuar com as ferramentas?`
+      : `Olá, ${firstName}! Tudo bem? Você está no ${client.activeDays}º dia de acesso ao NEXUM e faltam ${client.daysRemaining} dias. Como está sendo sua experiência com os indicadores?`;
+    return `https://wa.me/${number}?text=${encodeURIComponent(message)}`;
+  }
+
   if (checkingSession) {
     return (
       <main className="admin-page overview-login-page">
@@ -390,261 +499,447 @@ function AdminOverviewPage() {
           </div>
         </header>
 
-        <section className="overview-rule" aria-label="Regra de validade dos acessos">
-          <CalendarClock aria-hidden="true" />
-          <div>
-            <strong>25 dias de acesso</strong>
-            <span>O prazo começa somente quando a equipe clica em “Liberar acesso”.</span>
-          </div>
-          {stats.expiringSoon > 0 ? (
-            <span className="overview-rule-alert">
-              {stats.expiringSoon} {stats.expiringSoon === 1 ? "acesso vence" : "acessos vencem"} em
-              até 3 dias
-            </span>
-          ) : (
-            <span className="overview-rule-ok">
-              <CheckCircle2 aria-hidden="true" /> Validades em dia
-            </span>
-          )}
-        </section>
-
-        {error ? (
-          <p className="overview-feedback is-error" role="alert">
-            {error}
-          </p>
-        ) : null}
-        {success ? <p className="overview-feedback is-success">{success}</p> : null}
-
-        <section className="overview-kpis" aria-label="Indicadores principais">
-          <article>
-            <span className="overview-kpi-icon is-purple">
-              <Users aria-hidden="true" />
-            </span>
-            <div>
-              <span>Total de leads</span>
-              <strong>{stats.leads}</strong>
-              <small>+{stats.leadsLastSevenDays} nos últimos 7 dias</small>
-            </div>
-          </article>
-          <article>
-            <span className="overview-kpi-icon is-blue">
-              <Link2 aria-hidden="true" />
-            </span>
-            <div>
-              <span>Convites gerados</span>
-              <strong>{stats.invites}</strong>
-              <small>{stats.leadToInvite}% dos leads receberam link</small>
-            </div>
-          </article>
-          <article>
-            <span className="overview-kpi-icon is-amber">
-              <Clock3 aria-hidden="true" />
-            </span>
-            <div>
-              <span>Aguardando liberação</span>
-              <strong>{stats.pending}</strong>
-              <small>Cadastros prontos para revisar</small>
-            </div>
-          </article>
-          <article>
-            <span className="overview-kpi-icon is-green">
-              <UserCheck aria-hidden="true" />
-            </span>
-            <div>
-              <span>Acessos ativos</span>
-              <strong>{stats.active}</strong>
-              <small>{stats.approved} liberações no total</small>
-            </div>
-          </article>
-          <article>
-            <span className="overview-kpi-icon is-rose">
-              <CalendarClock aria-hidden="true" />
-            </span>
-            <div>
-              <span>Acessos expirados</span>
-              <strong>{stats.expired}</strong>
-              <small>Encerrados após os 25 dias</small>
-            </div>
-          </article>
-        </section>
-
-        <section className="overview-main-grid">
-          <article className="overview-panel overview-funnel">
-            <div className="overview-panel-heading">
-              <div>
-                <span className="admin-eyebrow">Conversão</span>
-                <h2>Jornada do cliente</h2>
-              </div>
-              <TrendingUp aria-hidden="true" />
-            </div>
-            <div className="overview-funnel-steps">
-              {[
-                { label: "Entradas na LP", value: stats.leads, conversion: 100 },
-                {
-                  label: "Links protegidos",
-                  value: stats.invites,
-                  conversion: stats.leadToInvite,
-                },
-                {
-                  label: "Cadastros confirmados",
-                  value: stats.registrations,
-                  conversion: stats.inviteToRegistration,
-                },
-                {
-                  label: "Acessos liberados",
-                  value: stats.approved,
-                  conversion: stats.registrationToApproval,
-                },
-              ].map((step, index) => (
-                <div className="overview-funnel-step" key={step.label}>
-                  <div>
-                    <span>{step.label}</span>
-                    <strong>{step.value}</strong>
-                  </div>
-                  <div className="overview-funnel-track" aria-hidden="true">
-                    <span
-                      style={{ width: `${Math.max(4, percentage(step.value, stats.leads))}%` }}
-                    />
-                  </div>
-                  <small>
-                    {index === 0 ? "Base total" : `${step.conversion}% da etapa anterior`}
-                  </small>
-                </div>
-              ))}
-            </div>
-          </article>
-
-          <article className="overview-panel overview-activity">
-            <div className="overview-panel-heading">
-              <div>
-                <span className="admin-eyebrow">Tempo real</span>
-                <h2>Atividade recente</h2>
-              </div>
-              <Activity aria-hidden="true" />
-            </div>
-            <div className="overview-activity-list">
-              {activity.map((item) => {
-                const Icon =
-                  item.type === "lead"
-                    ? UserPlus
-                    : item.type === "invite"
-                      ? Link2
-                      : item.type === "registration"
-                        ? Mail
-                        : ShieldCheck;
-                return (
-                  <div className={`overview-activity-item is-${item.type}`} key={item.id}>
-                    <span>
-                      <Icon aria-hidden="true" />
-                    </span>
-                    <div>
-                      <strong>{item.title}</strong>
-                      <small>{item.description}</small>
-                    </div>
-                    <time dateTime={item.date}>{formatDate(item.date)}</time>
-                  </div>
-                );
-              })}
-              {activity.length === 0 ? (
-                <div className="overview-empty">Nenhuma atividade registrada ainda.</div>
+        <Tabs defaultValue="overview" className="overview-tabs">
+          <TabsList className="overview-tabs-list" aria-label="Áreas do dashboard">
+            <TabsTrigger className="overview-tab-trigger" value="overview">
+              <Activity aria-hidden="true" /> Visão geral
+            </TabsTrigger>
+            <TabsTrigger className="overview-tab-trigger" value="expiration">
+              <CalendarClock aria-hidden="true" /> Prazos e contatos
+              {expirationStats.contactNow > 0 ? (
+                <span className="overview-tab-count">{expirationStats.contactNow}</span>
               ) : null}
-            </div>
-          </article>
-        </section>
+            </TabsTrigger>
+          </TabsList>
 
-        <section className="overview-panel overview-access-panel">
-          <div className="overview-panel-heading overview-section-heading">
-            <div>
-              <span className="admin-eyebrow">Controle de acesso</span>
-              <h2>Liberações e validade</h2>
-              <p>A data final é calculada automaticamente: liberação + 25 dias.</p>
-            </div>
-            <div>
-              <button type="button" className="admin-secondary-button" onClick={exportAccesses}>
-                <Download aria-hidden="true" /> Exportar acessos
-              </button>
-              <Link to="/validacao" className="overview-text-link">
-                Ver validações <ArrowRight aria-hidden="true" />
-              </Link>
-            </div>
-          </div>
-          <div className="overview-access-list">
-            {recentAccesses.map((registration) => (
-              <article className="overview-access-row" key={registration.id}>
-                <span className={`overview-status ${accessClass(registration)}`}>
-                  {accessLabel(registration)}
+          <TabsContent className="overview-tab-content" value="overview">
+            <section className="overview-rule" aria-label="Regra de validade dos acessos">
+              <CalendarClock aria-hidden="true" />
+              <div>
+                <strong>25 dias de acesso</strong>
+                <span>O prazo começa somente quando a equipe clica em “Liberar acesso”.</span>
+              </div>
+              {stats.expiringSoon > 0 ? (
+                <span className="overview-rule-alert">
+                  {stats.expiringSoon}{" "}
+                  {stats.expiringSoon === 1 ? "acesso vence" : "acessos vencem"} em até 3 dias
                 </span>
-                <div className="overview-access-person">
-                  <strong>{registration.name}</strong>
-                  <span>{registration.email}</span>
-                </div>
-                <div className="overview-access-date">
-                  <span>Liberado em</span>
-                  <strong>{formatDate(registration.approvedAt, true)}</strong>
-                </div>
-                <div className="overview-access-date">
-                  <span>Vencimento</span>
-                  <strong>{formatDate(registration.expiresAt, true)}</strong>
-                </div>
-                {registration.status === "approved" && !registration.accessExpired ? (
-                  <div className="overview-days-left">
-                    <strong>{daysUntil(registration.expiresAt)}</strong>
-                    <span>dias restantes</span>
-                  </div>
-                ) : null}
-                {registration.status === "pending" ? (
-                  <button
-                    type="button"
-                    className="overview-approve-button"
-                    onClick={() => approve(registration)}
-                    disabled={actionId === registration.id}
-                  >
-                    <ShieldCheck aria-hidden="true" />
-                    {actionId === registration.id ? "Liberando..." : "Liberar 25 dias"}
-                  </button>
-                ) : null}
-              </article>
-            ))}
-            {recentAccesses.length === 0 ? (
-              <div className="overview-empty">Nenhum convite ou acesso registrado ainda.</div>
-            ) : null}
-          </div>
-        </section>
+              ) : (
+                <span className="overview-rule-ok">
+                  <CheckCircle2 aria-hidden="true" /> Validades em dia
+                </span>
+              )}
+            </section>
 
-        <section className="overview-panel overview-leads-panel">
-          <div className="overview-panel-heading overview-section-heading">
-            <div>
-              <span className="admin-eyebrow">Captação</span>
-              <h2>Últimos leads</h2>
-            </div>
-            <div>
-              <button type="button" className="admin-secondary-button" onClick={exportLeads}>
-                <Download aria-hidden="true" /> Exportar leads
-              </button>
-              <Link to="/inscritos" className="overview-text-link">
-                Ver lista completa <ArrowRight aria-hidden="true" />
-              </Link>
-            </div>
-          </div>
-          <div className="overview-lead-list">
-            {recentLeads.map((lead) => (
-              <article key={lead.id}>
-                <span className="overview-lead-avatar" aria-hidden="true">
-                  {lead.name.charAt(0).toLocaleUpperCase("pt-BR")}
+            {error ? (
+              <p className="overview-feedback is-error" role="alert">
+                {error}
+              </p>
+            ) : null}
+            {success ? <p className="overview-feedback is-success">{success}</p> : null}
+
+            <section className="overview-kpis" aria-label="Indicadores principais">
+              <article>
+                <span className="overview-kpi-icon is-purple">
+                  <Users aria-hidden="true" />
                 </span>
                 <div>
-                  <strong>{lead.name}</strong>
-                  <span>{lead.email}</span>
+                  <span>Total de leads</span>
+                  <strong>{stats.leads}</strong>
+                  <small>+{stats.leadsLastSevenDays} nos últimos 7 dias</small>
                 </div>
-                <a href={`https://wa.me/${lead.whatsapp.replace(/\D/g, "")}`}>{lead.whatsapp}</a>
-                <time dateTime={lead.createdAt}>{formatDate(lead.createdAt)}</time>
               </article>
-            ))}
-            {recentLeads.length === 0 ? (
-              <div className="overview-empty">Nenhum lead recebido ainda.</div>
-            ) : null}
-          </div>
-        </section>
+              <article>
+                <span className="overview-kpi-icon is-blue">
+                  <Link2 aria-hidden="true" />
+                </span>
+                <div>
+                  <span>Convites gerados</span>
+                  <strong>{stats.invites}</strong>
+                  <small>{stats.leadToInvite}% dos leads receberam link</small>
+                </div>
+              </article>
+              <article>
+                <span className="overview-kpi-icon is-amber">
+                  <Clock3 aria-hidden="true" />
+                </span>
+                <div>
+                  <span>Aguardando liberação</span>
+                  <strong>{stats.pending}</strong>
+                  <small>Cadastros prontos para revisar</small>
+                </div>
+              </article>
+              <article>
+                <span className="overview-kpi-icon is-green">
+                  <UserCheck aria-hidden="true" />
+                </span>
+                <div>
+                  <span>Acessos ativos</span>
+                  <strong>{stats.active}</strong>
+                  <small>{stats.approved} liberações no total</small>
+                </div>
+              </article>
+              <article>
+                <span className="overview-kpi-icon is-rose">
+                  <CalendarClock aria-hidden="true" />
+                </span>
+                <div>
+                  <span>Acessos expirados</span>
+                  <strong>{stats.expired}</strong>
+                  <small>Encerrados após os 25 dias</small>
+                </div>
+              </article>
+            </section>
+
+            <section className="overview-main-grid">
+              <article className="overview-panel overview-funnel">
+                <div className="overview-panel-heading">
+                  <div>
+                    <span className="admin-eyebrow">Conversão</span>
+                    <h2>Jornada do cliente</h2>
+                  </div>
+                  <TrendingUp aria-hidden="true" />
+                </div>
+                <div className="overview-funnel-steps">
+                  {[
+                    { label: "Entradas na LP", value: stats.leads, conversion: 100 },
+                    {
+                      label: "Links protegidos",
+                      value: stats.invites,
+                      conversion: stats.leadToInvite,
+                    },
+                    {
+                      label: "Cadastros confirmados",
+                      value: stats.registrations,
+                      conversion: stats.inviteToRegistration,
+                    },
+                    {
+                      label: "Acessos liberados",
+                      value: stats.approved,
+                      conversion: stats.registrationToApproval,
+                    },
+                  ].map((step, index) => (
+                    <div className="overview-funnel-step" key={step.label}>
+                      <div>
+                        <span>{step.label}</span>
+                        <strong>{step.value}</strong>
+                      </div>
+                      <div className="overview-funnel-track" aria-hidden="true">
+                        <span
+                          style={{ width: `${Math.max(4, percentage(step.value, stats.leads))}%` }}
+                        />
+                      </div>
+                      <small>
+                        {index === 0 ? "Base total" : `${step.conversion}% da etapa anterior`}
+                      </small>
+                    </div>
+                  ))}
+                </div>
+              </article>
+
+              <article className="overview-panel overview-activity">
+                <div className="overview-panel-heading">
+                  <div>
+                    <span className="admin-eyebrow">Tempo real</span>
+                    <h2>Atividade recente</h2>
+                  </div>
+                  <Activity aria-hidden="true" />
+                </div>
+                <div className="overview-activity-list">
+                  {activity.map((item) => {
+                    const Icon =
+                      item.type === "lead"
+                        ? UserPlus
+                        : item.type === "invite"
+                          ? Link2
+                          : item.type === "registration"
+                            ? Mail
+                            : ShieldCheck;
+                    return (
+                      <div className={`overview-activity-item is-${item.type}`} key={item.id}>
+                        <span>
+                          <Icon aria-hidden="true" />
+                        </span>
+                        <div>
+                          <strong>{item.title}</strong>
+                          <small>{item.description}</small>
+                        </div>
+                        <time dateTime={item.date}>{formatDate(item.date)}</time>
+                      </div>
+                    );
+                  })}
+                  {activity.length === 0 ? (
+                    <div className="overview-empty">Nenhuma atividade registrada ainda.</div>
+                  ) : null}
+                </div>
+              </article>
+            </section>
+
+            <section className="overview-panel overview-access-panel">
+              <div className="overview-panel-heading overview-section-heading">
+                <div>
+                  <span className="admin-eyebrow">Controle de acesso</span>
+                  <h2>Liberações e validade</h2>
+                  <p>A data final é calculada automaticamente: liberação + 25 dias.</p>
+                </div>
+                <div>
+                  <button type="button" className="admin-secondary-button" onClick={exportAccesses}>
+                    <Download aria-hidden="true" /> Exportar acessos
+                  </button>
+                  <Link to="/validacao" className="overview-text-link">
+                    Ver validações <ArrowRight aria-hidden="true" />
+                  </Link>
+                </div>
+              </div>
+              <div className="overview-access-list">
+                {recentAccesses.map((registration) => (
+                  <article className="overview-access-row" key={registration.id}>
+                    <span className={`overview-status ${accessClass(registration)}`}>
+                      {accessLabel(registration)}
+                    </span>
+                    <div className="overview-access-person">
+                      <strong>{registration.name}</strong>
+                      <span>{registration.email}</span>
+                    </div>
+                    <div className="overview-access-date">
+                      <span>Liberado em</span>
+                      <strong>{formatDate(registration.approvedAt, true)}</strong>
+                    </div>
+                    <div className="overview-access-date">
+                      <span>Vencimento</span>
+                      <strong>{formatDate(registration.expiresAt, true)}</strong>
+                    </div>
+                    {registration.status === "approved" && !registration.accessExpired ? (
+                      <div className="overview-days-left">
+                        <strong>{daysUntil(registration.expiresAt)}</strong>
+                        <span>dias restantes</span>
+                      </div>
+                    ) : null}
+                    {registration.status === "pending" ? (
+                      <button
+                        type="button"
+                        className="overview-approve-button"
+                        onClick={() => approve(registration)}
+                        disabled={actionId === registration.id}
+                      >
+                        <ShieldCheck aria-hidden="true" />
+                        {actionId === registration.id ? "Liberando..." : "Liberar 25 dias"}
+                      </button>
+                    ) : null}
+                  </article>
+                ))}
+                {recentAccesses.length === 0 ? (
+                  <div className="overview-empty">Nenhum convite ou acesso registrado ainda.</div>
+                ) : null}
+              </div>
+            </section>
+
+            <section className="overview-panel overview-leads-panel">
+              <div className="overview-panel-heading overview-section-heading">
+                <div>
+                  <span className="admin-eyebrow">Captação</span>
+                  <h2>Últimos leads</h2>
+                </div>
+                <div>
+                  <button type="button" className="admin-secondary-button" onClick={exportLeads}>
+                    <Download aria-hidden="true" /> Exportar leads
+                  </button>
+                  <Link to="/inscritos" className="overview-text-link">
+                    Ver lista completa <ArrowRight aria-hidden="true" />
+                  </Link>
+                </div>
+              </div>
+              <div className="overview-lead-list">
+                {recentLeads.map((lead) => (
+                  <article key={lead.id}>
+                    <span className="overview-lead-avatar" aria-hidden="true">
+                      {lead.name.charAt(0).toLocaleUpperCase("pt-BR")}
+                    </span>
+                    <div>
+                      <strong>{lead.name}</strong>
+                      <span>{lead.email}</span>
+                    </div>
+                    <a href={`https://wa.me/${lead.whatsapp.replace(/\D/g, "")}`}>
+                      {lead.whatsapp}
+                    </a>
+                    <time dateTime={lead.createdAt}>{formatDate(lead.createdAt)}</time>
+                  </article>
+                ))}
+                {recentLeads.length === 0 ? (
+                  <div className="overview-empty">Nenhum lead recebido ainda.</div>
+                ) : null}
+              </div>
+            </section>
+          </TabsContent>
+
+          <TabsContent className="overview-tab-content" value="expiration">
+            <section className="overview-panel renewal-overview-panel">
+              <div className="renewal-heading">
+                <div>
+                  <span className="admin-eyebrow">Régua de relacionamento</span>
+                  <h2>Clientes por prazo de expiração</h2>
+                  <p>
+                    Cada acesso dura 25 dias. O contato comercial entra em prioridade no 15º dia.
+                  </p>
+                </div>
+                <CalendarClock aria-hidden="true" />
+              </div>
+
+              <div className="renewal-summary" aria-label="Resumo dos prazos">
+                <article>
+                  <span>Acessos ativos</span>
+                  <strong>{expirationStats.active}</strong>
+                  <small>Dentro dos 25 dias</small>
+                </article>
+                <article className="is-priority">
+                  <span>Contato agora</span>
+                  <strong>{expirationStats.contactNow}</strong>
+                  <small>Entre o 15º e o 25º dia</small>
+                </article>
+                <article>
+                  <span>Entram na régua</span>
+                  <strong>{expirationStats.nextThreeDays}</strong>
+                  <small>Nos próximos 3 dias</small>
+                </article>
+                <article className="is-expired">
+                  <span>Expirados</span>
+                  <strong>{expirationStats.expired}</strong>
+                  <small>Prazo já encerrado</small>
+                </article>
+              </div>
+            </section>
+
+            <section className="overview-panel renewal-list-panel">
+              <div className="overview-panel-heading overview-section-heading">
+                <div>
+                  <span className="admin-eyebrow">Ordenado por prioridade</span>
+                  <h2>Agenda de contato</h2>
+                  <p>
+                    Os clientes no 15º dia ou mais aparecem primeiro, pelo vencimento mais próximo.
+                  </p>
+                </div>
+                {expirationStats.contactNow > 0 ? (
+                  <span className="renewal-priority-alert">
+                    <AlertTriangle aria-hidden="true" /> {expirationStats.contactNow} para contatar
+                  </span>
+                ) : (
+                  <span className="renewal-priority-ok">
+                    <CheckCircle2 aria-hidden="true" /> Nenhum contato pendente
+                  </span>
+                )}
+              </div>
+
+              <div className="renewal-table" role="table" aria-label="Clientes por expiração">
+                <div className="renewal-table-head" role="row">
+                  <span role="columnheader">Situação</span>
+                  <span role="columnheader">Cliente e contato</span>
+                  <span role="columnheader">Tempo ativo</span>
+                  <span role="columnheader">Expiração</span>
+                  <span role="columnheader">Ação</span>
+                </div>
+
+                <div className="renewal-table-body">
+                  {expirationClients.map((client) => {
+                    const whatsappLink = renewalWhatsappLink(client);
+                    const isExpired = client.registration.accessExpired;
+                    return (
+                      <article className="renewal-row" role="row" key={client.registration.id}>
+                        <div role="cell">
+                          <span
+                            className={`renewal-status ${
+                              isExpired
+                                ? "is-expired"
+                                : client.contactNow
+                                  ? "is-contact"
+                                  : "is-waiting"
+                            }`}
+                          >
+                            {isExpired
+                              ? "Expirado"
+                              : client.contactNow
+                                ? "Contato ativo"
+                                : "Em acompanhamento"}
+                          </span>
+                        </div>
+
+                        <div className="renewal-client" role="cell">
+                          <span className="renewal-avatar" aria-hidden="true">
+                            {client.name.charAt(0).toLocaleUpperCase("pt-BR")}
+                          </span>
+                          <div>
+                            <strong>{client.name}</strong>
+                            {client.whatsapp ? (
+                              <a href={whatsappLink} target="_blank" rel="noreferrer">
+                                <Phone aria-hidden="true" /> {client.whatsapp}
+                              </a>
+                            ) : (
+                              <span className="renewal-missing-phone">Telefone não encontrado</span>
+                            )}
+                            <small>{client.email}</small>
+                          </div>
+                        </div>
+
+                        <div className="renewal-progress" role="cell">
+                          <div>
+                            <strong>Dia {client.activeDays} de 25</strong>
+                            <span>{Math.round((client.activeDays / accessDays) * 100)}%</span>
+                          </div>
+                          <span className="renewal-progress-track" aria-hidden="true">
+                            <span
+                              style={{
+                                width: `${Math.min(100, (client.activeDays / accessDays) * 100)}%`,
+                              }}
+                            />
+                          </span>
+                          <small>
+                            {isExpired
+                              ? "Prazo encerrado"
+                              : client.contactNow
+                                ? "Contato comercial liberado"
+                                : `Contato em ${client.waitingDays} ${
+                                    client.waitingDays === 1 ? "dia" : "dias"
+                                  }`}
+                          </small>
+                        </div>
+
+                        <div className="renewal-expiration" role="cell">
+                          <time dateTime={client.registration.expiresAt ?? undefined}>
+                            {formatDate(client.registration.expiresAt, true)}
+                          </time>
+                          <small>
+                            {isExpired
+                              ? `há ${client.expiredDays} ${
+                                  client.expiredDays === 1 ? "dia" : "dias"
+                                }`
+                              : `${client.daysRemaining} ${
+                                  client.daysRemaining === 1 ? "dia restante" : "dias restantes"
+                                }`}
+                          </small>
+                        </div>
+
+                        <div className="renewal-action" role="cell">
+                          {whatsappLink ? (
+                            <a href={whatsappLink} target="_blank" rel="noreferrer">
+                              <MessageCircle aria-hidden="true" /> Falar no WhatsApp
+                            </a>
+                          ) : (
+                            <span>Sem telefone</span>
+                          )}
+                        </div>
+                      </article>
+                    );
+                  })}
+
+                  {expirationClients.length === 0 ? (
+                    <div className="overview-empty">
+                      Nenhum acesso aprovado com prazo de expiração ainda.
+                    </div>
+                  ) : null}
+                </div>
+              </div>
+            </section>
+          </TabsContent>
+        </Tabs>
 
         <footer className="overview-footer">
           <Sparkles aria-hidden="true" /> Dashboard NEXUM · dados atualizados sob demanda
