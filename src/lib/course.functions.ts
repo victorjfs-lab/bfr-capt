@@ -9,11 +9,13 @@ import {
   getPublicInvitation,
   listCourseRegistrations,
   registerCourseInvite,
+  updateCourseProgress,
 } from "./course.server";
 import {
   courseAdminAccessSchema,
   courseApprovalSchema,
   courseInviteSchema,
+  courseProgressSchema,
   courseProtectedRegistrationSchema,
   courseTokenSchema,
 } from "./course.schema";
@@ -46,6 +48,13 @@ export const requestCourseAccess = createServerFn({ method: "POST" })
   .handler(async ({ data }) => {
     disableResponseCache();
     return await checkCourseToken(data.token);
+  });
+
+export const saveCourseProgress = createServerFn({ method: "POST" })
+  .validator(courseProgressSchema)
+  .handler(async ({ data }) => {
+    disableResponseCache();
+    return await updateCourseProgress(data.token, data.completedLessons);
   });
 
 export const getCourseRegistrations = createServerFn({ method: "POST" })

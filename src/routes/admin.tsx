@@ -3,6 +3,7 @@ import {
   Activity,
   AlertTriangle,
   ArrowRight,
+  BookOpenCheck,
   CalendarClock,
   CheckCircle2,
   Clock3,
@@ -13,6 +14,7 @@ import {
   Mail,
   MessageCircle,
   Phone,
+  PackageCheck,
   RefreshCw,
   ShieldCheck,
   Sparkles,
@@ -293,6 +295,32 @@ function AdminOverviewPage() {
     };
   }, [expirationClients]);
 
+  const engagementClients = useMemo(
+    () =>
+      [...expirationClients].sort((clientA, clientB) => {
+        const activityA = new Date(
+          clientA.registration.lastActivityAt ?? clientA.registration.approvedAt ?? 0,
+        ).getTime();
+        const activityB = new Date(
+          clientB.registration.lastActivityAt ?? clientB.registration.approvedAt ?? 0,
+        ).getTime();
+        return activityB - activityA;
+      }),
+    [expirationClients],
+  );
+
+  const engagementStats = useMemo(
+    () => ({
+      students: engagementClients.length,
+      started: engagementClients.filter((client) => client.registration.courseProgress > 0).length,
+      completed: engagementClients.filter((client) => client.registration.courseProgress === 100)
+        .length,
+      downloaded: engagementClients.filter((client) => client.registration.indicatorDownloaded)
+        .length,
+    }),
+    [engagementClients],
+  );
+
   useEffect(() => {
     let active = true;
 
@@ -381,6 +409,11 @@ function AdminOverviewPage() {
         "Liberado em",
         "Vence em",
         "Dias restantes",
+        "Aulas concluídas",
+        "Progresso do curso",
+        "Baixou o indicador",
+        "Download em",
+        "Última atividade",
       ],
       ...data.registrations.map((registration) => [
         registration.id,
@@ -392,6 +425,11 @@ function AdminOverviewPage() {
         formatDate(registration.approvedAt),
         formatDate(registration.expiresAt),
         registration.status === "approved" ? daysUntil(registration.expiresAt) : "—",
+        `${registration.completedLessons.length}/4`,
+        `${registration.courseProgress}%`,
+        registration.indicatorDownloaded ? "Sim" : "Não",
+        formatDate(registration.indicatorDownloadedAt),
+        formatDate(registration.lastActivityAt),
       ]),
     ]);
   }
@@ -508,6 +546,12 @@ function AdminOverviewPage() {
               <CalendarClock aria-hidden="true" /> Prazos e contatos
               {expirationStats.contactNow > 0 ? (
                 <span className="overview-tab-count">{expirationStats.contactNow}</span>
+              ) : null}
+            </TabsTrigger>
+            <TabsTrigger className="overview-tab-trigger" value="engagement">
+              <BookOpenCheck aria-hidden="true" /> Aulas e downloads
+              {engagementStats.students > 0 ? (
+                <span className="overview-tab-count">{engagementStats.students}</span>
               ) : null}
             </TabsTrigger>
           </TabsList>
@@ -934,6 +978,150 @@ function AdminOverviewPage() {
                     <div className="overview-empty">
                       Nenhum acesso aprovado com prazo de expiração ainda.
                     </div>
+                  ) : null}
+                </div>
+              </div>
+            </section>
+          </TabsContent>
+
+          <TabsContent className="overview-tab-content" value="engagement">
+            <section className="engagement-heading">
+              <div>
+                <span className="admin-eyebrow">Acompanhamento individual</span>
+                <h2>Aulas assistidas e entrega do indicador</h2>
+                <p>
+                  O progresso é salvo no cadastro do cliente. Uma aula conta como assistida ao
+                  chegar a 90% do vídeo ou quando o aluno marca a conclusão.
+                </p>
+              </div>
+              <BookOpenCheck aria-hidden="true" />
+            </section>
+
+            <section className="engagement-summary" aria-label="Resumo de engajamento">
+              <article>
+                <span>Alunos liberados</span>
+                <strong>{engagementStats.students}</strong>
+                <small>Com acesso aprovado</small>
+              </article>
+              <article>
+                <span>Começaram as aulas</span>
+                <strong>{engagementStats.started}</strong>
+                <small>Ao menos uma aula</small>
+              </article>
+              <article className="is-complete">
+                <span>Curso concluído</span>
+                <strong>{engagementStats.completed}</strong>
+                <small>100% das quatro aulas</small>
+              </article>
+              <article className="is-downloaded">
+                <span>Baixaram o indicador</span>
+                <strong>{engagementStats.downloaded}</strong>
+                <small>Download confirmado</small>
+              </article>
+            </section>
+
+            <section className="overview-panel engagement-list-panel">
+              <div className="overview-panel-heading overview-section-heading">
+                <div>
+                  <span className="admin-eyebrow">Dados em tempo real</span>
+                  <h2>Engajamento por cliente</h2>
+                  <p>Veja o avanço nas aulas e confirme a entrega dos arquivos do NEXUM.</p>
+                </div>
+                <button
+                  type="button"
+                  className="admin-secondary-button"
+                  onClick={() => loadOverview(password)}
+                  disabled={loading}
+                >
+                  <RefreshCw aria-hidden="true" /> {loading ? "Atualizando" : "Atualizar dados"}
+                </button>
+              </div>
+
+              <div className="engagement-table" role="table" aria-label="Engajamento dos alunos">
+                <div className="engagement-table-head" role="row">
+                  <span role="columnheader">Cliente</span>
+                  <span role="columnheader">Aulas assistidas</span>
+                  <span role="columnheader">Indicador</span>
+                  <span role="columnheader">Última atividade</span>
+                  <span role="columnheader">Contato</span>
+                </div>
+
+                <div className="engagement-table-body">
+                  {engagementClients.map((client) => {
+                    const whatsappLink = renewalWhatsappLink(client);
+                    const registration = client.registration;
+                    return (
+                      <article className="engagement-row" role="row" key={registration.id}>
+                        <div className="renewal-client" role="cell">
+                          <span className="renewal-avatar" aria-hidden="true">
+                            {client.name.charAt(0).toLocaleUpperCase("pt-BR")}
+                          </span>
+                          <div>
+                            <strong>{client.name}</strong>
+                            <small>{client.email}</small>
+                            {client.whatsapp ? <span>{client.whatsapp}</span> : null}
+                          </div>
+                        </div>
+
+                        <div className="engagement-progress" role="cell">
+                          <div>
+                            <strong>{registration.courseProgress}%</strong>
+                            <span>{registration.completedLessons.length}/4 aulas</span>
+                          </div>
+                          <span className="engagement-progress-track" aria-hidden="true">
+                            <span style={{ width: `${registration.courseProgress}%` }} />
+                          </span>
+                          <small>
+                            {registration.courseProgress === 100
+                              ? "Treinamento concluído"
+                              : registration.courseProgress > 0
+                                ? "Treinamento em andamento"
+                                : "Ainda não iniciou"}
+                          </small>
+                        </div>
+
+                        <div className="engagement-download" role="cell">
+                          <span
+                            className={registration.indicatorDownloaded ? "is-done" : "is-pending"}
+                          >
+                            {registration.indicatorDownloaded ? (
+                              <PackageCheck aria-hidden="true" />
+                            ) : (
+                              <Download aria-hidden="true" />
+                            )}
+                            {registration.indicatorDownloaded ? "Baixou" : "Não baixou"}
+                          </span>
+                          <small>
+                            {registration.indicatorDownloadedAt
+                              ? formatDate(registration.indicatorDownloadedAt)
+                              : "Aguardando download"}
+                          </small>
+                        </div>
+
+                        <div className="engagement-activity" role="cell">
+                          <strong>{formatDate(registration.lastActivityAt)}</strong>
+                          <small>
+                            {registration.lastActivityAt
+                              ? "Última ação registrada"
+                              : "Sem atividade no curso"}
+                          </small>
+                        </div>
+
+                        <div className="renewal-action" role="cell">
+                          {whatsappLink ? (
+                            <a href={whatsappLink} target="_blank" rel="noreferrer">
+                              <MessageCircle aria-hidden="true" /> WhatsApp
+                            </a>
+                          ) : (
+                            <span>Sem telefone</span>
+                          )}
+                        </div>
+                      </article>
+                    );
+                  })}
+
+                  {engagementClients.length === 0 ? (
+                    <div className="overview-empty">Nenhum aluno com acesso aprovado ainda.</div>
                   ) : null}
                 </div>
               </div>

@@ -28,7 +28,16 @@ type MysqlCourseRow = RowDataPacket & {
   createdAt: string;
   registeredAt: string | null;
   approvedAt: string | null;
+  completedLessons: string | null;
+  indicatorDownloadedAt: string | null;
+  lastActivityAt: string | null;
 };
+
+const courseSelect = `id, name, email, invite_token AS inviteToken, status,
+  created_at AS createdAt, registered_at AS registeredAt,
+  approved_at AS approvedAt, completed_lessons AS completedLessons,
+  indicator_downloaded_at AS indicatorDownloadedAt,
+  last_activity_at AS lastActivityAt`;
 
 function normalizeEmail(email: string) {
   return email.trim().toLowerCase();
@@ -43,12 +52,35 @@ function courseExpirationDate(approvedAt: string | null) {
   return new Date(approvedTimestamp + courseAccessDays * dayInMilliseconds).toISOString();
 }
 
+function normalizeCompletedLessons(value: unknown) {
+  if (!value) return [];
+
+  try {
+    const parsed = JSON.parse(String(value)) as unknown;
+    if (!Array.isArray(parsed)) return [];
+    return [
+      ...new Set(
+        parsed.filter(
+          (lesson): lesson is number =>
+            typeof lesson === "number" && Number.isInteger(lesson) && lesson >= 1 && lesson <= 4,
+        ),
+      ),
+    ].sort((lessonA, lessonB) => lessonA - lessonB);
+  } catch {
+    return [];
+  }
+}
+
 function normalizeCourseRow(row: Record<string, unknown>): CourseRegistrationRecord {
   const status: CourseInviteStatus =
     row.status === "approved" ? "approved" : row.status === "pending" ? "pending" : "invited";
 
   const approvedAt = row.approvedAt ? String(row.approvedAt) : null;
   const expiresAt = courseExpirationDate(approvedAt);
+  const completedLessons = normalizeCompletedLessons(row.completedLessons);
+  const indicatorDownloadedAt = row.indicatorDownloadedAt
+    ? String(row.indicatorDownloadedAt)
+    : null;
 
   return {
     id: Number(row.id),
@@ -61,10 +93,17 @@ function normalizeCourseRow(row: Record<string, unknown>): CourseRegistrationRec
     approvedAt,
     expiresAt,
     accessExpired: expiresAt ? new Date(expiresAt).getTime() <= Date.now() : false,
+    completedLessons,
+    courseProgress: Math.round((completedLessons.length / 4) * 100),
+    indicatorDownloaded: Boolean(indicatorDownloadedAt),
+    indicatorDownloadedAt,
+    lastActivityAt: row.lastActivityAt ? String(row.lastActivityAt) : null,
   };
 }
 
-async function ensureCourseTable() {
+let courseTableSetup: Promise<void> | null = null;
+
+async function prepareCourseTable() {
   if (hasMysqlConfiguration()) {
     const database = await getMysqlDatabase();
     await database.execute(`
@@ -77,16 +116,36 @@ async function ensureCourseTable() {
         created_at VARCHAR(35) NOT NULL,
         registered_at VARCHAR(35) NULL,
         approved_at VARCHAR(35) NULL,
+        completed_lessons VARCHAR(40) NOT NULL DEFAULT '[]',
+        indicator_downloaded_at VARCHAR(35) NULL,
+        last_activity_at VARCHAR(35) NULL,
         PRIMARY KEY (id),
         UNIQUE INDEX course_registrations_email_idx (email),
         UNIQUE INDEX course_registrations_token_idx (invite_token),
         INDEX course_registrations_status_idx (status)
       ) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci
     `);
+
+    const [columns] = await database.query<RowDataPacket[]>(
+      `SHOW COLUMNS FROM course_registrations`,
+    );
+    const existingColumns = new Set(columns.map((column) => String(column.Field)));
+    const missingColumns = [
+      ["completed_lessons", "completed_lessons VARCHAR(40) NOT NULL DEFAULT '[]'"],
+      ["indicator_downloaded_at", "indicator_downloaded_at VARCHAR(35) NULL"],
+      ["last_activity_at", "last_activity_at VARCHAR(35) NULL"],
+    ] as const;
+
+    for (const [column, definition] of missingColumns) {
+      if (!existingColumns.has(column)) {
+        await database.execute(`ALTER TABLE course_registrations ADD COLUMN ${definition}`);
+      }
+    }
     return;
   }
 
-  getDatabase().exec(`
+  const database = getDatabase();
+  database.exec(`
     CREATE TABLE IF NOT EXISTS course_registrations (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       name TEXT NOT NULL,
@@ -96,12 +155,43 @@ async function ensureCourseTable() {
         CHECK (status IN ('invited', 'pending', 'approved')),
       created_at TEXT NOT NULL,
       registered_at TEXT,
-      approved_at TEXT
+      approved_at TEXT,
+      completed_lessons TEXT NOT NULL DEFAULT '[]',
+      indicator_downloaded_at TEXT,
+      last_activity_at TEXT
     ) STRICT;
 
     CREATE INDEX IF NOT EXISTS course_registrations_status_idx
       ON course_registrations(status);
   `);
+
+  const existingColumns = new Set(
+    (
+      database.prepare(`PRAGMA table_info(course_registrations)`).all() as Array<{ name: string }>
+    ).map((column) => column.name),
+  );
+  if (!existingColumns.has("completed_lessons")) {
+    database.exec(
+      `ALTER TABLE course_registrations ADD COLUMN completed_lessons TEXT NOT NULL DEFAULT '[]'`,
+    );
+  }
+  if (!existingColumns.has("indicator_downloaded_at")) {
+    database.exec(`ALTER TABLE course_registrations ADD COLUMN indicator_downloaded_at TEXT`);
+  }
+  if (!existingColumns.has("last_activity_at")) {
+    database.exec(`ALTER TABLE course_registrations ADD COLUMN last_activity_at TEXT`);
+  }
+}
+
+async function ensureCourseTable() {
+  courseTableSetup ??= prepareCourseTable();
+
+  try {
+    await courseTableSetup;
+  } catch (error) {
+    courseTableSetup = null;
+    throw error;
+  }
 }
 
 async function findLead(email: string): Promise<LeadIdentity | null> {
@@ -140,9 +230,7 @@ async function findRegistrationByEmail(email: string): Promise<CourseRegistratio
   if (hasMysqlConfiguration()) {
     const database = await getMysqlDatabase();
     const [rows] = await database.query<MysqlCourseRow[]>(
-      `SELECT id, name, email, invite_token AS inviteToken, status,
-              created_at AS createdAt, registered_at AS registeredAt,
-              approved_at AS approvedAt
+      `SELECT ${courseSelect}
        FROM course_registrations
        WHERE email = ?
        LIMIT 1`,
@@ -153,9 +241,7 @@ async function findRegistrationByEmail(email: string): Promise<CourseRegistratio
 
   const row = getDatabase()
     .prepare(
-      `SELECT id, name, email, invite_token AS inviteToken, status,
-              created_at AS createdAt, registered_at AS registeredAt,
-              approved_at AS approvedAt
+      `SELECT ${courseSelect}
        FROM course_registrations
        WHERE email = ?
        LIMIT 1`,
@@ -171,9 +257,7 @@ async function findRegistrationByToken(token: string): Promise<CourseRegistratio
   if (hasMysqlConfiguration()) {
     const database = await getMysqlDatabase();
     const [rows] = await database.query<MysqlCourseRow[]>(
-      `SELECT id, name, email, invite_token AS inviteToken, status,
-              created_at AS createdAt, registered_at AS registeredAt,
-              approved_at AS approvedAt
+      `SELECT ${courseSelect}
        FROM course_registrations
        WHERE invite_token = ?
        LIMIT 1`,
@@ -184,9 +268,7 @@ async function findRegistrationByToken(token: string): Promise<CourseRegistratio
 
   const row = getDatabase()
     .prepare(
-      `SELECT id, name, email, invite_token AS inviteToken, status,
-              created_at AS createdAt, registered_at AS registeredAt,
-              approved_at AS approvedAt
+      `SELECT ${courseSelect}
        FROM course_registrations
        WHERE invite_token = ?
        LIMIT 1`,
@@ -202,9 +284,7 @@ async function findRegistrationById(id: number): Promise<CourseRegistrationRecor
   if (hasMysqlConfiguration()) {
     const database = await getMysqlDatabase();
     const [rows] = await database.query<MysqlCourseRow[]>(
-      `SELECT id, name, email, invite_token AS inviteToken, status,
-              created_at AS createdAt, registered_at AS registeredAt,
-              approved_at AS approvedAt
+      `SELECT ${courseSelect}
        FROM course_registrations
        WHERE id = ?
        LIMIT 1`,
@@ -215,9 +295,7 @@ async function findRegistrationById(id: number): Promise<CourseRegistrationRecor
 
   const row = getDatabase()
     .prepare(
-      `SELECT id, name, email, invite_token AS inviteToken, status,
-              created_at AS createdAt, registered_at AS registeredAt,
-              approved_at AS approvedAt
+      `SELECT ${courseSelect}
        FROM course_registrations
        WHERE id = ?
        LIMIT 1`,
@@ -376,7 +454,83 @@ export async function checkCourseToken(token: string): Promise<CourseActionResul
     status: "approved",
     name: registration.name,
     token: registration.inviteToken,
+    completedLessons: registration.completedLessons,
+    indicatorDownloaded: registration.indicatorDownloaded,
   };
+}
+
+export async function updateCourseProgress(
+  token: string,
+  completedLessons: number[],
+): Promise<CourseActionResult> {
+  const registration = await findRegistrationByToken(token);
+
+  if (!registration || registration.status !== "approved" || registration.accessExpired) {
+    return { ok: false, message: notFoundMessage };
+  }
+
+  const normalizedLessons = [
+    ...new Set(
+      completedLessons.filter((lesson) => Number.isInteger(lesson) && lesson >= 1 && lesson <= 4),
+    ),
+  ].sort((lessonA, lessonB) => lessonA - lessonB);
+  const completedLessonsJson = JSON.stringify(normalizedLessons);
+  const activityAt = new Date().toISOString();
+
+  if (hasMysqlConfiguration()) {
+    const database = await getMysqlDatabase();
+    await database.execute(
+      `UPDATE course_registrations
+       SET completed_lessons = ?, last_activity_at = ?
+       WHERE id = ?`,
+      [completedLessonsJson, activityAt, registration.id],
+    );
+  } else {
+    getDatabase()
+      .prepare(
+        `UPDATE course_registrations
+         SET completed_lessons = ?, last_activity_at = ?
+         WHERE id = ?`,
+      )
+      .run(completedLessonsJson, activityAt, registration.id);
+  }
+
+  return {
+    ok: true,
+    status: "approved",
+    name: registration.name,
+    token: registration.inviteToken,
+    completedLessons: normalizedLessons,
+    indicatorDownloaded: registration.indicatorDownloaded,
+  };
+}
+
+export async function recordIndicatorDownload(token: string) {
+  const registration = await findRegistrationByToken(token);
+  if (!registration || registration.status !== "approved" || registration.accessExpired) {
+    return false;
+  }
+
+  const downloadedAt = new Date().toISOString();
+  if (hasMysqlConfiguration()) {
+    const database = await getMysqlDatabase();
+    await database.execute(
+      `UPDATE course_registrations
+       SET indicator_downloaded_at = COALESCE(indicator_downloaded_at, ?), last_activity_at = ?
+       WHERE id = ?`,
+      [downloadedAt, downloadedAt, registration.id],
+    );
+  } else {
+    getDatabase()
+      .prepare(
+        `UPDATE course_registrations
+         SET indicator_downloaded_at = COALESCE(indicator_downloaded_at, ?), last_activity_at = ?
+         WHERE id = ?`,
+      )
+      .run(downloadedAt, downloadedAt, registration.id);
+  }
+
+  return true;
 }
 
 export async function listCourseRegistrations(): Promise<CourseRegistrationRecord[]> {
@@ -385,9 +539,7 @@ export async function listCourseRegistrations(): Promise<CourseRegistrationRecor
   if (hasMysqlConfiguration()) {
     const database = await getMysqlDatabase();
     const [rows] = await database.query<MysqlCourseRow[]>(
-      `SELECT id, name, email, invite_token AS inviteToken, status,
-              created_at AS createdAt, registered_at AS registeredAt,
-              approved_at AS approvedAt
+      `SELECT ${courseSelect}
        FROM course_registrations
        ORDER BY created_at DESC, id DESC`,
     );
@@ -396,9 +548,7 @@ export async function listCourseRegistrations(): Promise<CourseRegistrationRecor
 
   const rows = getDatabase()
     .prepare(
-      `SELECT id, name, email, invite_token AS inviteToken, status,
-              created_at AS createdAt, registered_at AS registeredAt,
-              approved_at AS approvedAt
+      `SELECT ${courseSelect}
        FROM course_registrations
        ORDER BY created_at DESC, id DESC`,
     )

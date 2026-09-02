@@ -2,7 +2,7 @@ import { Buffer } from "node:buffer";
 
 import { createFileRoute } from "@tanstack/react-router";
 
-import { checkCourseToken } from "../../lib/course.server";
+import { checkCourseToken, recordIndicatorDownload } from "../../lib/course.server";
 import { indicatorsArchiveBase64 } from "../../lib/indicators.asset";
 
 export const Route = createFileRoute("/api/indicadores")({
@@ -20,6 +20,8 @@ export const Route = createFileRoute("/api/indicadores")({
         if (!access.ok) {
           return new Response("Acesso não autorizado.", { status: 403 });
         }
+
+        await recordIndicatorDownload(token);
 
         const file = Buffer.from(indicatorsArchiveBase64, "base64");
 

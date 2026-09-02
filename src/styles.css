@@ -4413,6 +4413,198 @@ footer {
   background: rgba(255, 255, 255, 0.025);
 }
 
+.engagement-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 24px;
+  margin-top: 14px;
+  padding: 24px;
+  border: 1px solid rgba(159, 86, 248, 0.16);
+  border-radius: 14px 14px 0 0;
+  background:
+    radial-gradient(circle at 88% 18%, rgba(153, 70, 255, 0.12), transparent 31%),
+    rgba(10, 9, 15, 0.88);
+}
+.engagement-heading .admin-eyebrow {
+  margin: 0;
+  font-size: 9px;
+}
+.engagement-heading h2 {
+  margin: 7px 0 0;
+  font-size: 22px;
+  letter-spacing: -0.04em;
+}
+.engagement-heading p {
+  max-width: 720px;
+  margin: 7px 0 0;
+  color: rgba(255, 255, 255, 0.38);
+  font-size: 10px;
+  line-height: 1.6;
+}
+.engagement-heading > svg {
+  width: 42px;
+  height: 42px;
+  flex: 0 0 auto;
+  padding: 10px;
+  border: 1px solid rgba(167, 94, 255, 0.22);
+  border-radius: 11px;
+  color: #b472ff;
+  background: rgba(154, 76, 255, 0.07);
+}
+.engagement-summary {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  padding: 16px;
+  border: 1px solid rgba(159, 86, 248, 0.16);
+  border-top: 0;
+  border-radius: 0 0 14px 14px;
+  background: rgba(10, 9, 15, 0.88);
+}
+.engagement-summary article {
+  display: grid;
+  gap: 5px;
+  min-height: 96px;
+  padding: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.065);
+  border-radius: 11px;
+  background: rgba(255, 255, 255, 0.018);
+}
+.engagement-summary article.is-complete {
+  border-color: rgba(74, 237, 187, 0.18);
+  background: rgba(74, 237, 187, 0.035);
+}
+.engagement-summary article.is-downloaded {
+  border-color: rgba(113, 179, 255, 0.18);
+  background: rgba(75, 156, 255, 0.035);
+}
+.engagement-summary span {
+  color: rgba(255, 255, 255, 0.4);
+  font-size: 9px;
+  font-weight: 700;
+}
+.engagement-summary strong {
+  font-size: 27px;
+  letter-spacing: -0.05em;
+}
+.engagement-summary article.is-complete strong {
+  color: #72efc6;
+}
+.engagement-summary article.is-downloaded strong {
+  color: #8bc4ff;
+}
+.engagement-summary small {
+  color: rgba(255, 255, 255, 0.27);
+  font-size: 8px;
+}
+.engagement-list-panel {
+  margin-top: 12px;
+}
+.engagement-table {
+  padding: 0 20px 10px;
+}
+.engagement-table-head,
+.engagement-row {
+  display: grid;
+  grid-template-columns: minmax(230px, 1.25fr) minmax(180px, 0.9fr) minmax(145px, 0.7fr) minmax(
+      135px,
+      0.7fr
+    ) 120px;
+  align-items: center;
+  gap: 15px;
+}
+.engagement-table-head {
+  min-height: 42px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+  color: rgba(255, 255, 255, 0.28);
+  font-size: 8px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.engagement-row {
+  min-height: 94px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.045);
+}
+.engagement-row:last-child {
+  border-bottom: 0;
+}
+.engagement-row .renewal-client > div > span {
+  color: #b979ff;
+  font-size: 8px;
+}
+.engagement-progress {
+  display: grid;
+  gap: 6px;
+}
+.engagement-progress > div {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+}
+.engagement-progress strong {
+  color: #c18bff;
+  font-size: 14px;
+}
+.engagement-progress span,
+.engagement-progress small {
+  color: rgba(255, 255, 255, 0.34);
+  font-size: 8px;
+}
+.engagement-progress-track {
+  height: 6px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.06);
+}
+.engagement-progress-track > span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #7c2be5, #c37cff);
+}
+.engagement-download,
+.engagement-activity {
+  display: grid;
+  gap: 6px;
+}
+.engagement-download > span {
+  display: inline-flex;
+  width: fit-content;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 8px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 999px;
+  font-size: 8px;
+  font-weight: 800;
+}
+.engagement-download > span svg {
+  width: 12px;
+  height: 12px;
+}
+.engagement-download > span.is-done {
+  border-color: rgba(74, 237, 187, 0.2);
+  color: #72efc6;
+  background: rgba(74, 237, 187, 0.05);
+}
+.engagement-download > span.is-pending {
+  border-color: rgba(255, 193, 72, 0.18);
+  color: #ffd078;
+  background: rgba(255, 193, 72, 0.04);
+}
+.engagement-download small,
+.engagement-activity small {
+  color: rgba(255, 255, 255, 0.28);
+  font-size: 8px;
+}
+.engagement-activity strong {
+  color: rgba(255, 255, 255, 0.72);
+  font-size: 9px;
+}
+
 @media (max-width: 1100px) {
   .overview-kpis {
     grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -4440,6 +4632,20 @@ footer {
   .renewal-row > div:nth-child(5) {
     grid-column: 3;
   }
+  .engagement-table-head {
+    display: none;
+  }
+  .engagement-row {
+    grid-template-columns: minmax(260px, 1.2fr) minmax(190px, 0.8fr) minmax(150px, 0.7fr);
+    gap: 12px 16px;
+    padding: 16px 0;
+  }
+  .engagement-row > div:nth-child(4) {
+    grid-column: 2;
+  }
+  .engagement-row > div:nth-child(5) {
+    grid-column: 3;
+  }
 }
 
 @media (max-width: 760px) {
@@ -4463,7 +4669,7 @@ footer {
   .overview-tabs-list {
     display: grid;
     width: 100%;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: repeat(3, 1fr);
   }
   .overview-tab-trigger {
     justify-content: center;
@@ -4567,6 +4773,33 @@ footer {
   .renewal-action > span {
     width: 100%;
   }
+  .engagement-heading {
+    padding: 20px;
+  }
+  .engagement-heading > svg {
+    width: 36px;
+    height: 36px;
+  }
+  .engagement-summary {
+    grid-template-columns: 1fr 1fr;
+  }
+  .engagement-table {
+    padding: 0 14px 10px;
+  }
+  .engagement-row {
+    grid-template-columns: 1fr 1fr;
+    padding: 18px 0;
+  }
+  .engagement-row .renewal-client,
+  .engagement-progress {
+    grid-column: 1 / -1;
+  }
+  .engagement-row > div:nth-child(4) {
+    grid-column: 1;
+  }
+  .engagement-row > div:nth-child(5) {
+    grid-column: 2;
+  }
 }
 
 @media (max-width: 430px) {
@@ -4582,7 +4815,15 @@ footer {
   }
   .overview-tab-trigger {
     padding: 0 9px;
-    font-size: 9px;
+    gap: 5px;
+    font-size: 8px;
+  }
+  .overview-tab-trigger svg {
+    width: 13px;
+    height: 13px;
+  }
+  .overview-tab-count {
+    display: none;
   }
   .renewal-heading h2 {
     font-size: 19px;
@@ -4595,6 +4836,19 @@ footer {
   }
   .renewal-row > div:nth-child(4),
   .renewal-row > div:nth-child(5) {
+    grid-column: 1;
+  }
+  .engagement-heading h2 {
+    font-size: 19px;
+  }
+  .engagement-summary {
+    grid-template-columns: 1fr;
+  }
+  .engagement-row {
+    grid-template-columns: 1fr;
+  }
+  .engagement-row > div:nth-child(4),
+  .engagement-row > div:nth-child(5) {
     grid-column: 1;
   }
 }

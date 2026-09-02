@@ -21,6 +21,14 @@ export const courseTokenSchema = z.object({
   token: tokenSchema,
 });
 
+export const courseProgressSchema = z.object({
+  token: tokenSchema,
+  completedLessons: z
+    .array(z.number().int().min(1).max(4))
+    .max(4)
+    .transform((lessons) => [...new Set(lessons)].sort((lessonA, lessonB) => lessonA - lessonB)),
+});
+
 export const courseAdminAccessSchema = z.object({
   password: z.string().max(200).default(""),
 });
@@ -43,6 +51,11 @@ export type CourseRegistrationRecord = {
   approvedAt: string | null;
   expiresAt: string | null;
   accessExpired: boolean;
+  completedLessons: number[];
+  courseProgress: number;
+  indicatorDownloaded: boolean;
+  indicatorDownloadedAt: string | null;
+  lastActivityAt: string | null;
 };
 
 export type CoursePublicInvitation = {
@@ -51,5 +64,12 @@ export type CoursePublicInvitation = {
 };
 
 export type CourseActionResult =
-  | { ok: true; status: CourseInviteStatus; name: string; token: string }
+  | {
+      ok: true;
+      status: CourseInviteStatus;
+      name: string;
+      token: string;
+      completedLessons?: number[];
+      indicatorDownloaded?: boolean;
+    }
   | { ok: false; message: string };

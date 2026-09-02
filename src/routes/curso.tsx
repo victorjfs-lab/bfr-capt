@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import Player from "@vimeo/player";
 import {
   ArrowLeft,
   Check,
@@ -12,9 +13,9 @@ import {
   Play,
   Sparkles,
 } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
-import { requestCourseAccess } from "../lib/course.functions";
+import { requestCourseAccess, saveCourseProgress } from "../lib/course.functions";
 
 export const Route = createFileRoute("/curso")({
   component: CoursePage,
@@ -73,6 +74,24 @@ const lessons = [
   },
 ];
 
+function savedCourseProgress(token: string) {
+  const progressKey = `nexum-course-progress:${token.slice(0, 12)}`;
+  const savedProgress = window.localStorage.getItem(progressKey);
+  if (!savedProgress) return [];
+
+  try {
+    const parsedProgress = JSON.parse(savedProgress) as unknown;
+    if (!Array.isArray(parsedProgress)) return [];
+    return parsedProgress.filter(
+      (item): item is number =>
+        typeof item === "number" && Number.isInteger(item) && item >= 1 && item <= lessons.length,
+    );
+  } catch {
+    window.localStorage.removeItem(progressKey);
+    return [];
+  }
+}
+
 function CoursePage() {
   const { convite } = Route.useSearch();
   const [accessState, setAccessState] = useState<"loading" | "granted" | "denied">("loading");
@@ -81,6 +100,9 @@ function CoursePage() {
   const [selectedLesson, setSelectedLesson] = useState(0);
   const [playingLesson, setPlayingLesson] = useState<number | null>(null);
   const [completedLessons, setCompletedLessons] = useState<number[]>([]);
+  const [indicatorDownloaded, setIndicatorDownloaded] = useState(false);
+  const completedLessonsRef = useRef<number[]>([]);
+  const playerIframeRef = useRef<HTMLIFrameElement | null>(null);
 
   useEffect(() => {
     let active = true;
@@ -102,8 +124,23 @@ function CoursePage() {
           return;
         }
 
+        const serverProgress = result.completedLessons ?? [];
+        const localProgress = savedCourseProgress(convite);
+        const mergedProgress = [...new Set([...serverProgress, ...localProgress])].sort(
+          (lessonA, lessonB) => lessonA - lessonB,
+        );
+
         setStudentName(result.name);
+        completedLessonsRef.current = mergedProgress;
+        setCompletedLessons(mergedProgress);
+        setIndicatorDownloaded(Boolean(result.indicatorDownloaded));
         setAccessState("granted");
+
+        if (mergedProgress.length !== serverProgress.length) {
+          void saveCourseProgress({
+            data: { token: convite, completedLessons: mergedProgress },
+          }).catch(() => undefined);
+        }
       } catch {
         if (active) {
           setAccessMessage("Usuário não encontrado, confirmar E-mail.");
@@ -118,40 +155,61 @@ function CoursePage() {
     };
   }, [convite]);
 
-  useEffect(() => {
-    const progressKey = `nexum-course-progress:${convite.slice(0, 12)}`;
-    const savedProgress = window.localStorage.getItem(progressKey);
-    if (!savedProgress) return;
-
-    try {
-      const parsedProgress = JSON.parse(savedProgress) as unknown;
-      if (Array.isArray(parsedProgress)) {
-        setCompletedLessons(parsedProgress.filter((item) => typeof item === "number"));
-      }
-    } catch {
-      window.localStorage.removeItem(progressKey);
-    }
-  }, [convite]);
-
   const progress = useMemo(
     () => Math.round((completedLessons.length / lessons.length) * 100),
     [completedLessons],
   );
 
-  function toggleLessonComplete(lessonNumber: number) {
-    setCompletedLessons((current) => {
-      const next = current.includes(lessonNumber)
-        ? current.filter((item) => item !== lessonNumber)
-        : [...current, lessonNumber];
+  const persistCompletedLessons = useCallback(
+    (next: number[]) => {
+      const normalizedLessons = [...new Set(next)].sort((lessonA, lessonB) => lessonA - lessonB);
+      completedLessonsRef.current = normalizedLessons;
+      setCompletedLessons(normalizedLessons);
 
       const progressKey = `nexum-course-progress:${convite.slice(0, 12)}`;
-      window.localStorage.setItem(progressKey, JSON.stringify(next));
-      return next;
-    });
+      window.localStorage.setItem(progressKey, JSON.stringify(normalizedLessons));
+      void saveCourseProgress({
+        data: { token: convite, completedLessons: normalizedLessons },
+      }).catch(() => undefined);
+    },
+    [convite],
+  );
+
+  function toggleLessonComplete(lessonNumber: number) {
+    const current = completedLessonsRef.current;
+    const next = current.includes(lessonNumber)
+      ? current.filter((item) => item !== lessonNumber)
+      : [...current, lessonNumber];
+    persistCompletedLessons(next);
   }
+
+  const markLessonWatched = useCallback(
+    (lessonNumber: number) => {
+      if (completedLessonsRef.current.includes(lessonNumber)) return;
+      persistCompletedLessons([...completedLessonsRef.current, lessonNumber]);
+    },
+    [persistCompletedLessons],
+  );
 
   const activeLesson = lessons[selectedLesson];
   const activeLessonCompleted = completedLessons.includes(activeLesson.number);
+
+  useEffect(() => {
+    const iframe = playerIframeRef.current;
+    if (accessState !== "granted" || !iframe) return;
+
+    const player = new Player(iframe);
+    let listening = true;
+    const handleTimeUpdate = ({ percent }: { percent: number }) => {
+      if (listening && percent >= 0.9) markLessonWatched(activeLesson.number);
+    };
+
+    player.on("timeupdate", handleTimeUpdate);
+    return () => {
+      listening = false;
+      player.off("timeupdate", handleTimeUpdate);
+    };
+  }, [accessState, activeLesson.number, activeLesson.videoId, markLessonWatched, playingLesson]);
 
   if (accessState !== "granted") {
     return (
@@ -205,7 +263,7 @@ function CoursePage() {
               <div className="course-progress-track" aria-hidden="true">
                 <span style={{ width: `${progress}%` }} />
               </div>
-              <p>Seu progresso fica salvo automaticamente neste dispositivo.</p>
+              <p>Seu progresso fica salvo automaticamente no seu acesso.</p>
             </aside>
           </div>
         </section>
@@ -226,6 +284,7 @@ function CoursePage() {
                 ) : (
                   <iframe
                     key={activeLesson.videoId}
+                    ref={playerIframeRef}
                     src={`https://player.vimeo.com/video/${activeLesson.videoId}?dnt=1&title=0&byline=0&portrait=0${playingLesson === activeLesson.number ? "&autoplay=1" : ""}`}
                     title={`Aula ${activeLesson.number} — ${activeLesson.title}`}
                     allow="autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media; web-share"
@@ -340,8 +399,12 @@ function CoursePage() {
                   <h3>Indicadores NEXUM</h3>
                   <p>Baixe o pacote com os três indicadores apresentados no treinamento.</p>
                 </div>
-                <a href={`/api/indicadores?convite=${encodeURIComponent(convite)}`}>
-                  <Download aria-hidden="true" /> Baixar indicadores
+                <a
+                  href={`/api/indicadores?convite=${encodeURIComponent(convite)}`}
+                  onClick={() => setIndicatorDownloaded(true)}
+                >
+                  <Download aria-hidden="true" />
+                  {indicatorDownloaded ? "Baixar novamente" : "Baixar indicadores"}
                 </a>
               </div>
 
