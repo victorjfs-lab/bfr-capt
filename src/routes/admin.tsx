@@ -16,6 +16,7 @@ import {
   Phone,
   PackageCheck,
   RefreshCw,
+  ShieldCheck,
   Sparkles,
   TrendingUp,
   Trash2,
