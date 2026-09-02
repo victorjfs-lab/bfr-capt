@@ -1,2 +1,5 @@
 allowBuilds:
   esbuild: true
+
+patchedDependencies:
+  nf3@0.3.18: patches/nf3@0.3.18.patch
