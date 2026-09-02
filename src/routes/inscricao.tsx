@@ -169,9 +169,10 @@ function CourseRegistrationPage() {
             <p className="enrollment-eyebrow">Cadastro confirmado</p>
             <h1 id="enrollment-title">Tudo certo, {invitation?.name?.split(" ")[0]}.</h1>
             <p>
-              Seus dados foram reconhecidos. Agora seu acesso está aguardando a liberação da equipe.
+              Seus dados foram reconhecidos. A liberação será concluída automaticamente ao acessar o
+              treinamento.
             </p>
-            <a href={`/curso?convite=${convite}`}>VERIFICAR MEU ACESSO</a>
+            <a href={`/curso?convite=${convite}`}>ACESSAR O MINI CURSO</a>
           </div>
         ) : null}
 
@@ -180,7 +181,10 @@ function CourseRegistrationPage() {
             <CheckCircle2 aria-hidden="true" />
             <p className="enrollment-eyebrow">Acesso liberado</p>
             <h1 id="enrollment-title">Seu treinamento está disponível.</h1>
-            <p>Entre agora na área de aulas e faça o download dos seus indicadores.</p>
+            <p>
+              E-mail reconhecido. Seus 25 dias de acesso começam agora e o treinamento já está
+              disponível.
+            </p>
             <a href={`/curso?convite=${convite}`}>
               ACESSAR O MINI CURSO <ArrowRight aria-hidden="true" />
             </a>

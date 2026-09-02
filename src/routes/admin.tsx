@@ -16,7 +16,6 @@ import {
   Phone,
   PackageCheck,
   RefreshCw,
-  ShieldCheck,
   Sparkles,
   TrendingUp,
   Trash2,
@@ -39,7 +38,6 @@ import {
   AlertDialogTrigger,
 } from "../components/ui/alert-dialog";
 import {
-  approveAdminRegistration,
   deleteAdminContact,
   getAdminOverview,
   markAdminContacted,
@@ -152,7 +150,7 @@ function downloadCsv(filename: string, rows: Array<Array<string | number>>) {
 
 function accessLabel(registration: CourseRegistrationRecord) {
   if (registration.status === "invited") return "Convite enviado";
-  if (registration.status === "pending") return "Aguardando liberação";
+  if (registration.status === "pending") return "Confirmação recebida";
   if (registration.accessExpired) return "Acesso expirado";
   return "Acesso ativo";
 }
@@ -217,7 +215,6 @@ function AdminOverviewPage() {
   const [data, setData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(false);
   const [checkingSession, setCheckingSession] = useState(true);
-  const [actionId, setActionId] = useState<number | null>(null);
   const [contactActionId, setContactActionId] = useState<number | null>(null);
   const [deleteActionId, setDeleteActionId] = useState<number | null>(null);
   const [error, setError] = useState("");
@@ -230,7 +227,7 @@ function AdminOverviewPage() {
     const leadsLastSevenDays = data.leads.filter(
       (lead) => new Date(lead.createdAt).getTime() >= sevenDaysAgo,
     ).length;
-    const pending = data.registrations.filter((item) => item.status === "pending").length;
+    const pending = data.registrations.filter((item) => item.status !== "approved").length;
     const registrations = data.registrations.filter((item) => item.registeredAt).length;
     const approved = data.registrations.filter((item) => item.status === "approved").length;
     const active = data.registrations.filter(
@@ -396,30 +393,6 @@ function AdminOverviewPage() {
   async function handleLogin(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     await loadOverview(password);
-  }
-
-  async function approve(registration: CourseRegistrationRecord) {
-    setActionId(registration.id);
-    setError("");
-    setSuccess("");
-
-    try {
-      const result = await approveAdminRegistration({
-        data: { password, registrationId: registration.id },
-      });
-
-      if (!result.ok) {
-        setError(result.message);
-        return;
-      }
-
-      setSuccess(`Acesso de ${result.name} liberado por 25 dias.`);
-      await loadOverview(password);
-    } catch {
-      setError("Não foi possível liberar este acesso.");
-    } finally {
-      setActionId(null);
-    }
   }
 
   async function markContacted(client: ExpirationClient) {
@@ -656,7 +629,9 @@ function AdminOverviewPage() {
               <CalendarClock aria-hidden="true" />
               <div>
                 <strong>25 dias de acesso</strong>
-                <span>O prazo começa somente quando a equipe clica em “Liberar acesso”.</span>
+                <span>
+                  O prazo começa automaticamente quando o cliente confirma o mesmo e-mail.
+                </span>
               </div>
               {stats.expiringSoon > 0 ? (
                 <span className="overview-rule-alert">
@@ -696,9 +671,9 @@ function AdminOverviewPage() {
                   <Clock3 aria-hidden="true" />
                 </span>
                 <div>
-                  <span>Aguardando liberação</span>
+                  <span>Aguardando cadastro</span>
                   <strong>{stats.pending}</strong>
-                  <small>Cadastros prontos para revisar</small>
+                  <small>Convites que ainda não foram concluídos</small>
                 </div>
               </article>
               <article>
@@ -812,7 +787,7 @@ function AdminOverviewPage() {
                 <div>
                   <span className="admin-eyebrow">Controle de acesso</span>
                   <h2>Liberações e validade</h2>
-                  <p>A data final é calculada automaticamente: liberação + 25 dias.</p>
+                  <p>O e-mail é validado e a data final é calculada automaticamente.</p>
                 </div>
                 <div>
                   <button type="button" className="admin-secondary-button" onClick={exportAccesses}>
@@ -846,17 +821,6 @@ function AdminOverviewPage() {
                         <strong>{daysUntil(registration.expiresAt)}</strong>
                         <span>dias restantes</span>
                       </div>
-                    ) : null}
-                    {registration.status === "pending" ? (
-                      <button
-                        type="button"
-                        className="overview-approve-button"
-                        onClick={() => approve(registration)}
-                        disabled={actionId === registration.id}
-                      >
-                        <ShieldCheck aria-hidden="true" />
-                        {actionId === registration.id ? "Liberando..." : "Liberar 25 dias"}
-                      </button>
                     ) : null}
                   </article>
                 ))}

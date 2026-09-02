@@ -391,21 +391,25 @@ export async function registerCourseInvite(input: {
     const database = await getMysqlDatabase();
     await database.execute(
       `UPDATE course_registrations
-       SET name = ?, status = 'pending', registered_at = ?
+       SET name = ?, status = 'approved',
+           registered_at = COALESCE(registered_at, ?),
+           approved_at = COALESCE(approved_at, ?)
        WHERE id = ?`,
-      [input.name, registeredAt, registration.id],
+      [input.name, registeredAt, registeredAt, registration.id],
     );
   } else {
     getDatabase()
       .prepare(
         `UPDATE course_registrations
-         SET name = ?, status = 'pending', registered_at = ?
+         SET name = ?, status = 'approved',
+             registered_at = COALESCE(registered_at, ?),
+             approved_at = COALESCE(approved_at, ?)
          WHERE id = ?`,
       )
-      .run(input.name, registeredAt, registration.id);
+      .run(input.name, registeredAt, registeredAt, registration.id);
   }
 
-  return { ok: true, status: "pending", name: input.name, token: input.token };
+  return { ok: true, status: "approved", name: input.name, token: input.token };
 }
 
 export async function approveCourseInvite(registrationId: number): Promise<CourseActionResult> {
@@ -440,7 +444,7 @@ export async function approveCourseInvite(registrationId: number): Promise<Cours
 }
 
 export async function checkCourseToken(token: string): Promise<CourseActionResult> {
-  const registration = await findRegistrationByToken(token);
+  let registration = await findRegistrationByToken(token);
 
   if (!registration || !(await findLead(registration.email))) {
     return { ok: false, message: notFoundMessage };
@@ -451,7 +455,11 @@ export async function checkCourseToken(token: string): Promise<CourseActionResul
   }
 
   if (registration.status === "pending") {
-    return { ok: false, message: "Seu acesso ainda está aguardando liberação." };
+    const automaticApproval = await approveCourseInvite(registration.id);
+    if (!automaticApproval.ok) return automaticApproval;
+
+    registration = await findRegistrationByToken(token);
+    if (!registration) return { ok: false, message: notFoundMessage };
   }
 
   if (registration.accessExpired) {

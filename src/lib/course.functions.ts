@@ -3,7 +3,6 @@ import { setResponseHeaders } from "@tanstack/react-start/server";
 
 import { authorizeMainAdmin } from "./admin-session.server";
 import {
-  approveCourseInvite,
   checkCourseToken,
   createCourseInvite,
   getPublicInvitation,
@@ -13,7 +12,6 @@ import {
 } from "./course.server";
 import {
   courseAdminAccessSchema,
-  courseApprovalSchema,
   courseInviteSchema,
   courseProgressSchema,
   courseProtectedRegistrationSchema,
@@ -71,12 +69,4 @@ export const generateCourseInvite = createServerFn({ method: "POST" })
     disableResponseCache();
     if (!authorizeMainAdmin(data.password)) throw new Error("Acesso não autorizado.");
     return await createCourseInvite(data.email);
-  });
-
-export const approveCourseRegistration = createServerFn({ method: "POST" })
-  .validator(courseApprovalSchema)
-  .handler(async ({ data }) => {
-    disableResponseCache();
-    if (!authorizeMainAdmin(data.password)) throw new Error("Acesso não autorizado.");
-    return await approveCourseInvite(data.registrationId);
   });

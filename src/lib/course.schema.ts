@@ -33,11 +33,6 @@ export const courseAdminAccessSchema = z.object({
   password: z.string().max(200).default(""),
 });
 
-export const courseApprovalSchema = z.object({
-  password: z.string().max(200).default(""),
-  registrationId: z.number().int().positive(),
-});
-
 export const courseContactActionSchema = z.object({
   password: z.string().max(200).default(""),
   registrationId: z.number().int().positive(),

@@ -9,16 +9,11 @@ import {
   LockKeyhole,
   RefreshCw,
   Send,
-  ShieldCheck,
   UserCheck,
 } from "lucide-react";
 import { FormEvent, useEffect, useMemo, useState } from "react";
 
-import {
-  approveCourseRegistration,
-  generateCourseInvite,
-  getCourseRegistrations,
-} from "../lib/course.functions";
+import { generateCourseInvite, getCourseRegistrations } from "../lib/course.functions";
 import type { CourseRegistrationRecord } from "../lib/course.schema";
 
 export const Route = createFileRoute("/validacao")({
@@ -33,7 +28,7 @@ export const Route = createFileRoute("/validacao")({
 
 const statusLabels = {
   invited: "Link enviado",
-  pending: "Aguardando liberação",
+  pending: "Confirmação recebida",
   approved: "Acesso liberado",
 } as const;
 
@@ -66,14 +61,13 @@ function ValidationPage() {
   const [registrations, setRegistrations] = useState<CourseRegistrationRecord[] | null>(null);
   const [loading, setLoading] = useState(false);
   const [checkingSession, setCheckingSession] = useState(true);
-  const [actionId, setActionId] = useState<number | null>(null);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [generatedLink, setGeneratedLink] = useState("");
   const [copied, setCopied] = useState(false);
 
-  const pendingCount = useMemo(
-    () => registrations?.filter((item) => item.status === "pending").length ?? 0,
+  const automaticAccessCount = useMemo(
+    () => registrations?.filter((item) => item.status === "approved").length ?? 0,
     [registrations],
   );
 
@@ -151,30 +145,6 @@ function ValidationPage() {
     window.setTimeout(() => setCopied(false), 1800);
   }
 
-  async function approve(registration: CourseRegistrationRecord) {
-    setActionId(registration.id);
-    setError("");
-    setSuccess("");
-
-    try {
-      const result = await approveCourseRegistration({
-        data: { password, registrationId: registration.id },
-      });
-
-      if (!result.ok) {
-        setError(result.message);
-        return;
-      }
-
-      setSuccess(`Acesso de ${result.name} liberado por 25 dias.`);
-      await loadRegistrations(password);
-    } catch {
-      setError("Não foi possível liberar este acesso.");
-    } finally {
-      setActionId(null);
-    }
-  }
-
   function exportSpreadsheet() {
     if (!registrations) return;
 
@@ -242,7 +212,7 @@ function ValidationPage() {
           <p className="admin-eyebrow">Área protegida</p>
           <h1 id="validation-login-title">Liberação de acessos</h1>
           <p className="admin-login-copy">
-            Entre com a senha principal para gerar convites e liberar alunos.
+            Entre com a senha principal para gerar convites e acompanhar os acessos automáticos.
           </p>
           <form className="admin-login-form" onSubmit={handleLogin}>
             <label>
@@ -300,8 +270,8 @@ function ValidationPage() {
         <section className="validation-summary" aria-label="Resumo das validações">
           <div>
             <Clock3 aria-hidden="true" />
-            <span>Aguardando liberação</span>
-            <strong>{pendingCount}</strong>
+            <span>Liberados automaticamente</span>
+            <strong>{automaticAccessCount}</strong>
           </div>
           <div>
             <UserCheck aria-hidden="true" />
@@ -353,10 +323,10 @@ function ValidationPage() {
         <section className="validation-list" aria-labelledby="validation-list-title">
           <div className="validation-section-copy">
             <span className="admin-eyebrow">Passo 2</span>
-            <h2 id="validation-list-title">Liberar acessos</h2>
+            <h2 id="validation-list-title">Acompanhar acessos</h2>
             <p>
-              Quando o cliente concluir o cadastro, clique em liberar. Os 25 dias começam nesse
-              momento.
+              Quando o cliente confirma o mesmo e-mail da página inicial e do convite, o sistema
+              libera os 25 dias automaticamente.
             </p>
           </div>
 
@@ -387,17 +357,6 @@ function ValidationPage() {
                   >
                     <Send aria-hidden="true" /> Copiar link
                   </button>
-                  {registration.status === "pending" ? (
-                    <button
-                      type="button"
-                      className="validation-approve-button"
-                      onClick={() => approve(registration)}
-                      disabled={actionId === registration.id}
-                    >
-                      <ShieldCheck aria-hidden="true" />
-                      {actionId === registration.id ? "LIBERANDO..." : "LIBERAR ACESSO"}
-                    </button>
-                  ) : null}
                   {registration.status === "approved" && !registration.accessExpired ? (
                     <span className="validation-approved-label">
                       <CheckCircle2 aria-hidden="true" /> Ativo
