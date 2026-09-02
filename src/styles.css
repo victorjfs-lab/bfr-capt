@@ -1930,16 +1930,54 @@ footer {
     width: calc(100% - 32px);
   }
   .reference-hero-inner {
-    padding-top: 22px;
+    padding-block: 12px 34px;
+  }
+  .reference-brand {
+    width: 210px;
+    height: 50px;
+  }
+  .reference-brand img {
+    width: 210px;
+    transform: translateY(-11px);
   }
   .reference-grid {
-    margin-top: 24px;
+    margin-top: 14px;
   }
   .reference-title {
-    font-size: clamp(32px, 8.7vw, 37px);
+    font-size: clamp(28px, 8vw, 32px);
+    line-height: 1.02;
+  }
+  .reference-title span {
+    margin-top: 10px;
+    font-size: 0.68em;
+    line-height: 1.08;
   }
   .reference-media {
-    margin-top: 20px;
+    width: 94%;
+    margin-top: 14px;
+    align-self: center;
+  }
+  .video-features {
+    gap: 6px;
+    margin-top: 8px;
+  }
+  .video-feature {
+    min-height: 48px;
+    padding-block: 5px;
+    font-size: 9px;
+  }
+  .lead-form {
+    gap: 8px;
+    margin-top: 18px;
+  }
+  .lead-field {
+    gap: 5px;
+  }
+  .lead-field input {
+    height: 42px;
+  }
+  .reference-button {
+    min-height: 56px;
   }
 }
 

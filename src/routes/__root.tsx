@@ -3,6 +3,7 @@ import {
   Outlet,
   Link,
   createRootRouteWithContext,
+  useLocation,
   useRouter,
   HeadContent,
   Scripts,
@@ -115,12 +116,12 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
 
 function RootShell({ children }: { children: ReactNode }) {
   return (
-    <html lang="pt-BR" data-theme="dark" data-font-size="large" suppressHydrationWarning>
+    <html lang="pt-BR" data-theme="dark" data-font-size="standard" suppressHydrationWarning>
       <head>
         <HeadContent />
         <script
           dangerouslySetInnerHTML={{
-            __html: `(function(){try{var t=localStorage.getItem('nexum-theme');var f=localStorage.getItem('nexum-font-size');document.documentElement.dataset.theme=t==='light'?'light':'dark';document.documentElement.dataset.fontSize=f==='standard'?'standard':'large';}catch(e){document.documentElement.dataset.theme='dark';document.documentElement.dataset.fontSize='large';}})();`,
+            __html: `(function(){try{var p=location.pathname.split('/')[1];var i=p==='admin'||p==='validacao'||p==='inscritos';if(!i){document.documentElement.dataset.theme='dark';document.documentElement.dataset.fontSize='standard';return;}var t=localStorage.getItem('nexum-theme');var f=localStorage.getItem('nexum-font-size');document.documentElement.dataset.theme=t==='light'?'light':'dark';document.documentElement.dataset.fontSize=f==='large'?'large':'standard';}catch(e){document.documentElement.dataset.theme='dark';document.documentElement.dataset.fontSize='standard';}})();`,
           }}
         />
         <script
@@ -152,6 +153,26 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
+  const pathname = useLocation({ select: (location) => location.pathname });
+  const isInternalPage = /^\/(admin|validacao|inscritos)(\/|$)/.test(pathname);
+
+  useEffect(() => {
+    if (!isInternalPage) {
+      document.documentElement.dataset.theme = "dark";
+      document.documentElement.dataset.fontSize = "standard";
+      return;
+    }
+
+    try {
+      const savedTheme = localStorage.getItem("nexum-theme");
+      const savedFontSize = localStorage.getItem("nexum-font-size");
+      document.documentElement.dataset.theme = savedTheme === "light" ? "light" : "dark";
+      document.documentElement.dataset.fontSize = savedFontSize === "large" ? "large" : "standard";
+    } catch {
+      document.documentElement.dataset.theme = "dark";
+      document.documentElement.dataset.fontSize = "standard";
+    }
+  }, [isInternalPage]);
 
   return (
     <QueryClientProvider client={queryClient}>
@@ -159,7 +180,7 @@ function RootComponent() {
         {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
         <Outlet />
       </div>
-      <AccessibilityControls />
+      {isInternalPage ? <AccessibilityControls /> : null}
     </QueryClientProvider>
   );
 }
