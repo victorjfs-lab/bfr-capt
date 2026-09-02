@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as ValidacaoRouteImport } from './routes/validacao'
 import { Route as OfertaRouteImport } from './routes/oferta'
+import { Route as NexumaulaabertaRouteImport } from './routes/nexumaulaaberta'
 import { Route as InscritosRouteImport } from './routes/inscritos'
 import { Route as InscricaoRouteImport } from './routes/inscricao'
 import { Route as CursoRouteImport } from './routes/curso'
@@ -28,6 +29,11 @@ const ValidacaoRoute = ValidacaoRouteImport.update({
 const OfertaRoute = OfertaRouteImport.update({
   id: '/oferta',
   path: '/oferta',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const NexumaulaabertaRoute = NexumaulaabertaRouteImport.update({
+  id: '/nexumaulaaberta',
+  path: '/nexumaulaaberta',
   getParentRoute: () => rootRouteImport,
 } as any)
 const InscritosRoute = InscritosRouteImport.update({
@@ -77,6 +83,7 @@ export interface FileRoutesByFullPath {
   '/curso': typeof CursoRoute
   '/inscricao': typeof InscricaoRoute
   '/inscritos': typeof InscritosRoute
+  '/nexumaulaaberta': typeof NexumaulaabertaRoute
   '/oferta': typeof OfertaRoute
   '/validacao': typeof ValidacaoRoute
   '/api/hotmart': typeof ApiHotmartRoute
@@ -89,6 +96,7 @@ export interface FileRoutesByTo {
   '/curso': typeof CursoRoute
   '/inscricao': typeof InscricaoRoute
   '/inscritos': typeof InscritosRoute
+  '/nexumaulaaberta': typeof NexumaulaabertaRoute
   '/oferta': typeof OfertaRoute
   '/validacao': typeof ValidacaoRoute
   '/api/hotmart': typeof ApiHotmartRoute
@@ -102,6 +110,7 @@ export interface FileRoutesById {
   '/curso': typeof CursoRoute
   '/inscricao': typeof InscricaoRoute
   '/inscritos': typeof InscritosRoute
+  '/nexumaulaaberta': typeof NexumaulaabertaRoute
   '/oferta': typeof OfertaRoute
   '/validacao': typeof ValidacaoRoute
   '/api/hotmart': typeof ApiHotmartRoute
@@ -116,6 +125,7 @@ export interface FileRouteTypes {
     | '/curso'
     | '/inscricao'
     | '/inscritos'
+    | '/nexumaulaaberta'
     | '/oferta'
     | '/validacao'
     | '/api/hotmart'
@@ -128,6 +138,7 @@ export interface FileRouteTypes {
     | '/curso'
     | '/inscricao'
     | '/inscritos'
+    | '/nexumaulaaberta'
     | '/oferta'
     | '/validacao'
     | '/api/hotmart'
@@ -140,6 +151,7 @@ export interface FileRouteTypes {
     | '/curso'
     | '/inscricao'
     | '/inscritos'
+    | '/nexumaulaaberta'
     | '/oferta'
     | '/validacao'
     | '/api/hotmart'
@@ -153,6 +165,7 @@ export interface RootRouteChildren {
   CursoRoute: typeof CursoRoute
   InscricaoRoute: typeof InscricaoRoute
   InscritosRoute: typeof InscritosRoute
+  NexumaulaabertaRoute: typeof NexumaulaabertaRoute
   OfertaRoute: typeof OfertaRoute
   ValidacaoRoute: typeof ValidacaoRoute
   ApiHotmartRoute: typeof ApiHotmartRoute
@@ -174,6 +187,13 @@ declare module '@tanstack/react-router' {
       path: '/oferta'
       fullPath: '/oferta'
       preLoaderRoute: typeof OfertaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/nexumaulaaberta': {
+      id: '/nexumaulaaberta'
+      path: '/nexumaulaaberta'
+      fullPath: '/nexumaulaaberta'
+      preLoaderRoute: typeof NexumaulaabertaRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/inscritos': {
@@ -241,6 +261,7 @@ const rootRouteChildren: RootRouteChildren = {
   CursoRoute: CursoRoute,
   InscricaoRoute: InscricaoRoute,
   InscritosRoute: InscritosRoute,
+  NexumaulaabertaRoute: NexumaulaabertaRoute,
   OfertaRoute: OfertaRoute,
   ValidacaoRoute: ValidacaoRoute,
   ApiHotmartRoute: ApiHotmartRoute,

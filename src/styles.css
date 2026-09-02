@@ -2467,6 +2467,15 @@ footer {
   font-size: 16px;
   line-height: 1.7;
 }
+.open-course-welcome h1 {
+  max-width: 900px;
+}
+.open-course-layout {
+  grid-template-columns: minmax(0, 1.75fr) minmax(300px, 0.75fr);
+}
+.open-course-actions {
+  justify-content: flex-end;
+}
 .course-progress-card {
   padding: 21px 22px;
   border: 1px solid rgba(255, 255, 255, 0.085);
@@ -4615,10 +4624,9 @@ footer {
 .finalized-table-head,
 .finalized-row {
   display: grid;
-  grid-template-columns: minmax(240px, 1.35fr) minmax(150px, 0.75fr) 90px minmax(
-      120px,
-      0.65fr
-    ) minmax(170px, 0.8fr);
+  grid-template-columns:
+    minmax(240px, 1.35fr) minmax(150px, 0.75fr) 90px minmax(120px, 0.65fr)
+    minmax(170px, 0.8fr);
   align-items: center;
   gap: 15px;
 }
