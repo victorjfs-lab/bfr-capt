@@ -38,6 +38,11 @@ export const courseApprovalSchema = z.object({
   registrationId: z.number().int().positive(),
 });
 
+export const courseContactActionSchema = z.object({
+  password: z.string().max(200).default(""),
+  registrationId: z.number().int().positive(),
+});
+
 export type CourseInviteStatus = "invited" | "pending" | "approved";
 
 export type CourseRegistrationRecord = {
@@ -56,6 +61,7 @@ export type CourseRegistrationRecord = {
   indicatorDownloaded: boolean;
   indicatorDownloadedAt: string | null;
   lastActivityAt: string | null;
+  contactedAt: string | null;
 };
 
 export type CoursePublicInvitation = {
@@ -73,3 +79,6 @@ export type CourseActionResult =
       indicatorDownloaded?: boolean;
     }
   | { ok: false; message: string };
+
+export type CourseContactActionResult =
+  { ok: true; name: string; email: string } | { ok: false; message: string };

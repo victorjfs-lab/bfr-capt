@@ -2174,6 +2174,86 @@ footer {
   margin: 10px 0 0;
   font-size: 13px;
 }
+.admin-pagination {
+  display: flex;
+  min-height: 72px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 22px;
+  padding: 15px 20px;
+  border-top: 1px solid rgba(255, 255, 255, 0.075);
+  background: rgba(255, 255, 255, 0.012);
+}
+.admin-pagination > p {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.38);
+  font-size: 11px;
+  white-space: nowrap;
+}
+.admin-pagination > p strong {
+  margin-inline: 3px;
+  color: rgba(255, 255, 255, 0.78);
+}
+.admin-pagination-nav {
+  width: auto;
+  margin: 0;
+}
+.admin-pagination-nav ul {
+  gap: 5px;
+}
+.admin-pagination-nav li {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+.admin-pagination-button {
+  display: inline-flex;
+  min-width: 36px;
+  height: 36px;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 0 10px;
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-radius: 8px;
+  color: rgba(255, 255, 255, 0.58);
+  background: rgba(255, 255, 255, 0.025);
+  font:
+    750 10px/1 "Manrope",
+    ui-sans-serif,
+    system-ui,
+    sans-serif;
+  cursor: pointer;
+}
+.admin-pagination-button:hover:not(:disabled) {
+  border-color: rgba(152, 81, 244, 0.48);
+  color: #fff;
+  background: rgba(152, 81, 244, 0.08);
+}
+.admin-pagination-button.is-active {
+  border-color: rgba(177, 108, 255, 0.58);
+  color: #fff;
+  background: linear-gradient(135deg, rgba(145, 54, 255, 0.78), rgba(103, 33, 198, 0.72));
+}
+.admin-pagination-button.is-direction {
+  min-width: 94px;
+}
+.admin-pagination-button svg {
+  width: 14px;
+  height: 14px;
+}
+.admin-pagination-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.3;
+}
+.admin-pagination-ellipsis {
+  display: grid;
+  width: 22px;
+  height: 36px;
+  color: rgba(255, 255, 255, 0.3);
+  font-size: 13px;
+  place-items: center;
+}
 
 @media (max-width: 720px) {
   .admin-page {
@@ -2244,6 +2324,23 @@ footer {
     font-weight: 800;
     letter-spacing: 0.06em;
     text-transform: uppercase;
+  }
+  .admin-pagination {
+    align-items: stretch;
+    flex-direction: column;
+    padding: 16px;
+  }
+  .admin-pagination > p {
+    text-align: center;
+  }
+  .admin-pagination-nav {
+    width: 100%;
+    overflow-x: auto;
+    padding-bottom: 3px;
+  }
+  .admin-pagination-nav ul {
+    width: max-content;
+    margin-inline: auto;
   }
 }
 
@@ -4182,6 +4279,10 @@ footer {
   border-color: rgba(255, 92, 132, 0.17);
   background: rgba(255, 92, 132, 0.03);
 }
+.renewal-summary article.is-complete {
+  border-color: rgba(74, 237, 187, 0.18);
+  background: rgba(74, 237, 187, 0.035);
+}
 .renewal-summary span {
   color: rgba(255, 255, 255, 0.4);
   font-size: 9px;
@@ -4196,6 +4297,9 @@ footer {
 }
 .renewal-summary article.is-expired strong {
   color: #ff8fab;
+}
+.renewal-summary article.is-complete strong {
+  color: #72efc6;
 }
 .renewal-summary small {
   color: rgba(255, 255, 255, 0.27);
@@ -4236,7 +4340,9 @@ footer {
 .renewal-table-head,
 .renewal-row {
   display: grid;
-  grid-template-columns: 118px minmax(230px, 1.25fr) minmax(170px, 0.9fr) 120px 150px;
+  grid-template-columns:
+    96px minmax(190px, 1.15fr) minmax(140px, 0.78fr) minmax(150px, 0.82fr) 108px
+    minmax(142px, 0.76fr);
   align-items: center;
   gap: 15px;
 }
@@ -4394,6 +4500,225 @@ footer {
   font-weight: 800;
   white-space: nowrap;
 }
+.renewal-engagement {
+  display: grid;
+  gap: 6px;
+}
+.renewal-engagement > div {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 7px;
+}
+.renewal-engagement strong {
+  font-size: 9px;
+}
+.renewal-engagement > div span {
+  color: rgba(255, 255, 255, 0.32);
+  font-size: 7px;
+}
+.renewal-course-track {
+  height: 5px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.06);
+}
+.renewal-course-track > span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #7c2be5, #c37cff);
+}
+.renewal-engagement small {
+  display: inline-flex;
+  width: fit-content;
+  align-items: center;
+  gap: 5px;
+  color: #ffd078;
+  font-size: 7px;
+}
+.renewal-engagement small.is-downloaded {
+  color: #72efc6;
+}
+.renewal-engagement small svg {
+  width: 11px;
+  height: 11px;
+}
+.renewal-actions {
+  display: grid;
+  gap: 6px;
+}
+.renewal-actions a,
+.renewal-actions > span,
+.renewal-actions > button {
+  display: inline-flex;
+  min-height: 32px;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 0 9px;
+  border-radius: 8px;
+  font-size: 7px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+.renewal-actions a {
+  border: 1px solid rgba(74, 237, 187, 0.2);
+  color: #72efc6;
+  background: rgba(74, 237, 187, 0.055);
+  text-decoration: none;
+}
+.renewal-actions > span {
+  color: rgba(255, 255, 255, 0.28);
+  background: rgba(255, 255, 255, 0.025);
+}
+.renewal-actions > button {
+  border: 1px solid rgba(174, 105, 255, 0.2);
+  color: #c18bff;
+  background: rgba(152, 70, 255, 0.055);
+  cursor: pointer;
+}
+.renewal-actions > button:hover:not(:disabled) {
+  border-color: rgba(174, 105, 255, 0.42);
+  background: rgba(152, 70, 255, 0.1);
+}
+.renewal-actions > button:disabled {
+  cursor: wait;
+  opacity: 0.55;
+}
+.renewal-actions svg {
+  width: 12px;
+  height: 12px;
+}
+.finalized-list-panel {
+  margin-top: 12px;
+}
+.finalized-count {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 8px 10px;
+  border: 1px solid rgba(74, 237, 187, 0.18);
+  border-radius: 999px;
+  color: #72efc6;
+  background: rgba(74, 237, 187, 0.045);
+  font-size: 8px;
+  font-weight: 800;
+}
+.finalized-count svg {
+  width: 13px;
+  height: 13px;
+}
+.finalized-table {
+  padding: 0 20px 10px;
+}
+.finalized-table-head,
+.finalized-row {
+  display: grid;
+  grid-template-columns: minmax(240px, 1.35fr) minmax(150px, 0.75fr) 90px minmax(
+      120px,
+      0.65fr
+    ) minmax(170px, 0.8fr);
+  align-items: center;
+  gap: 15px;
+}
+.finalized-table-head {
+  min-height: 42px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+  color: rgba(255, 255, 255, 0.28);
+  font-size: 8px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.finalized-row {
+  min-height: 88px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.045);
+}
+.finalized-row:last-child {
+  border-bottom: 0;
+}
+.finalized-row .renewal-client > div > span {
+  color: #b979ff;
+  font-size: 8px;
+}
+.finalized-date,
+.finalized-course {
+  display: grid;
+  gap: 4px;
+}
+.finalized-date strong,
+.finalized-course strong {
+  color: rgba(255, 255, 255, 0.76);
+  font-size: 9px;
+}
+.finalized-course strong {
+  color: #c18bff;
+  font-size: 13px;
+}
+.finalized-date small,
+.finalized-course small {
+  color: rgba(255, 255, 255, 0.29);
+  font-size: 8px;
+}
+.finalized-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.finalized-actions > a,
+.finalized-delete-button {
+  display: inline-flex;
+  min-height: 34px;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 0 10px;
+  border-radius: 8px;
+  font-size: 8px;
+  font-weight: 800;
+  text-decoration: none;
+}
+.finalized-actions > a {
+  border: 1px solid rgba(74, 237, 187, 0.18);
+  color: #72efc6;
+  background: rgba(74, 237, 187, 0.045);
+}
+.finalized-delete-button {
+  border: 1px solid rgba(255, 91, 130, 0.2);
+  color: #ff8eaa;
+  background: rgba(255, 91, 130, 0.045);
+  cursor: pointer;
+}
+.finalized-delete-button:hover {
+  border-color: rgba(255, 91, 130, 0.42);
+  background: rgba(255, 91, 130, 0.09);
+}
+.finalized-actions svg {
+  width: 12px;
+  height: 12px;
+}
+.nexum-delete-dialog {
+  border-color: rgba(255, 91, 130, 0.24);
+  color: #fff;
+  background: #0e0c14;
+  font-family: "Manrope", ui-sans-serif, system-ui, sans-serif;
+}
+.nexum-delete-dialog h2 {
+  color: #fff;
+}
+.nexum-delete-dialog p {
+  color: rgba(255, 255, 255, 0.55);
+  line-height: 1.6;
+}
+.nexum-delete-dialog button {
+  cursor: pointer;
+}
+.nexum-delete-confirm {
+  border-color: #d93461;
+  color: #fff;
+  background: #c82d56;
+}
 .renewal-action a {
   border: 1px solid rgba(74, 237, 187, 0.2);
   color: #72efc6;
@@ -4507,10 +4832,9 @@ footer {
 .engagement-table-head,
 .engagement-row {
   display: grid;
-  grid-template-columns: minmax(230px, 1.25fr) minmax(180px, 0.9fr) minmax(145px, 0.7fr) minmax(
-      135px,
-      0.7fr
-    ) 120px;
+  grid-template-columns:
+    minmax(230px, 1.25fr) minmax(180px, 0.9fr) minmax(145px, 0.7fr) minmax(135px, 0.7fr)
+    120px;
   align-items: center;
   gap: 15px;
 }
@@ -4630,6 +4954,24 @@ footer {
     grid-column: 2;
   }
   .renewal-row > div:nth-child(5) {
+    grid-column: 3;
+  }
+  .renewal-row > div:nth-child(6) {
+    grid-row: 2;
+    grid-column: 1;
+  }
+  .finalized-table-head {
+    display: none;
+  }
+  .finalized-row {
+    grid-template-columns: minmax(260px, 1.2fr) minmax(155px, 0.75fr) 90px;
+    gap: 12px 16px;
+    padding: 16px 0;
+  }
+  .finalized-row > div:nth-child(4) {
+    grid-column: 2;
+  }
+  .finalized-row > div:nth-child(5) {
     grid-column: 3;
   }
   .engagement-table-head {
@@ -4769,6 +5111,18 @@ footer {
   .renewal-row > div:nth-child(5) {
     grid-column: 2;
   }
+  .renewal-row > div:nth-child(6) {
+    grid-row: auto;
+    grid-column: 1 / -1;
+  }
+  .renewal-actions {
+    grid-template-columns: 1fr 1fr;
+  }
+  .renewal-actions a,
+  .renewal-actions > span,
+  .renewal-actions > button {
+    width: 100%;
+  }
   .renewal-action a,
   .renewal-action > span {
     width: 100%;
@@ -4799,6 +5153,26 @@ footer {
   }
   .engagement-row > div:nth-child(5) {
     grid-column: 2;
+  }
+  .finalized-table {
+    padding: 0 14px 10px;
+  }
+  .finalized-row {
+    grid-template-columns: 1fr 1fr;
+    padding: 18px 0;
+  }
+  .finalized-row .renewal-client {
+    grid-column: 1 / -1;
+  }
+  .finalized-row > div:nth-child(4) {
+    grid-column: 1;
+  }
+  .finalized-row > div:nth-child(5) {
+    grid-column: 2;
+  }
+  .finalized-actions {
+    align-items: stretch;
+    flex-direction: column;
   }
 }
 
@@ -4835,8 +5209,12 @@ footer {
     grid-template-columns: 1fr;
   }
   .renewal-row > div:nth-child(4),
-  .renewal-row > div:nth-child(5) {
+  .renewal-row > div:nth-child(5),
+  .renewal-row > div:nth-child(6) {
     grid-column: 1;
+  }
+  .renewal-actions {
+    grid-template-columns: 1fr;
   }
   .engagement-heading h2 {
     font-size: 19px;
@@ -4849,6 +5227,13 @@ footer {
   }
   .engagement-row > div:nth-child(4),
   .engagement-row > div:nth-child(5) {
+    grid-column: 1;
+  }
+  .finalized-row {
+    grid-template-columns: 1fr;
+  }
+  .finalized-row > div:nth-child(4),
+  .finalized-row > div:nth-child(5) {
     grid-column: 1;
   }
 }

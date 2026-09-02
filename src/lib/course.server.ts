@@ -4,6 +4,7 @@ import type { ResultSetHeader, RowDataPacket } from "mysql2/promise";
 
 import type {
   CourseActionResult,
+  CourseContactActionResult,
   CourseInviteStatus,
   CoursePublicInvitation,
   CourseRegistrationRecord,
@@ -31,13 +32,14 @@ type MysqlCourseRow = RowDataPacket & {
   completedLessons: string | null;
   indicatorDownloadedAt: string | null;
   lastActivityAt: string | null;
+  contactedAt: string | null;
 };
 
 const courseSelect = `id, name, email, invite_token AS inviteToken, status,
   created_at AS createdAt, registered_at AS registeredAt,
   approved_at AS approvedAt, completed_lessons AS completedLessons,
   indicator_downloaded_at AS indicatorDownloadedAt,
-  last_activity_at AS lastActivityAt`;
+  last_activity_at AS lastActivityAt, contacted_at AS contactedAt`;
 
 function normalizeEmail(email: string) {
   return email.trim().toLowerCase();
@@ -98,6 +100,7 @@ function normalizeCourseRow(row: Record<string, unknown>): CourseRegistrationRec
     indicatorDownloaded: Boolean(indicatorDownloadedAt),
     indicatorDownloadedAt,
     lastActivityAt: row.lastActivityAt ? String(row.lastActivityAt) : null,
+    contactedAt: row.contactedAt ? String(row.contactedAt) : null,
   };
 }
 
@@ -119,6 +122,7 @@ async function prepareCourseTable() {
         completed_lessons VARCHAR(40) NOT NULL DEFAULT '[]',
         indicator_downloaded_at VARCHAR(35) NULL,
         last_activity_at VARCHAR(35) NULL,
+        contacted_at VARCHAR(35) NULL,
         PRIMARY KEY (id),
         UNIQUE INDEX course_registrations_email_idx (email),
         UNIQUE INDEX course_registrations_token_idx (invite_token),
@@ -134,6 +138,7 @@ async function prepareCourseTable() {
       ["completed_lessons", "completed_lessons VARCHAR(40) NOT NULL DEFAULT '[]'"],
       ["indicator_downloaded_at", "indicator_downloaded_at VARCHAR(35) NULL"],
       ["last_activity_at", "last_activity_at VARCHAR(35) NULL"],
+      ["contacted_at", "contacted_at VARCHAR(35) NULL"],
     ] as const;
 
     for (const [column, definition] of missingColumns) {
@@ -158,7 +163,8 @@ async function prepareCourseTable() {
       approved_at TEXT,
       completed_lessons TEXT NOT NULL DEFAULT '[]',
       indicator_downloaded_at TEXT,
-      last_activity_at TEXT
+      last_activity_at TEXT,
+      contacted_at TEXT
     ) STRICT;
 
     CREATE INDEX IF NOT EXISTS course_registrations_status_idx
@@ -180,6 +186,9 @@ async function prepareCourseTable() {
   }
   if (!existingColumns.has("last_activity_at")) {
     database.exec(`ALTER TABLE course_registrations ADD COLUMN last_activity_at TEXT`);
+  }
+  if (!existingColumns.has("contacted_at")) {
+    database.exec(`ALTER TABLE course_registrations ADD COLUMN contacted_at TEXT`);
   }
 }
 
@@ -531,6 +540,77 @@ export async function recordIndicatorDownload(token: string) {
   }
 
   return true;
+}
+
+export async function markCourseContacted(
+  registrationId: number,
+): Promise<CourseContactActionResult> {
+  const registration = await findRegistrationById(registrationId);
+  if (!registration || registration.status !== "approved") {
+    return { ok: false, message: notFoundMessage };
+  }
+
+  const contactedAt = new Date().toISOString();
+  if (hasMysqlConfiguration()) {
+    const database = await getMysqlDatabase();
+    await database.execute(
+      `UPDATE course_registrations
+       SET contacted_at = COALESCE(contacted_at, ?)
+       WHERE id = ?`,
+      [contactedAt, registrationId],
+    );
+  } else {
+    getDatabase()
+      .prepare(
+        `UPDATE course_registrations
+         SET contacted_at = COALESCE(contacted_at, ?)
+         WHERE id = ?`,
+      )
+      .run(contactedAt, registrationId);
+  }
+
+  return { ok: true, name: registration.name, email: registration.email };
+}
+
+export async function deleteCourseContact(
+  registrationId: number,
+): Promise<CourseContactActionResult> {
+  const registration = await findRegistrationById(registrationId);
+  if (!registration) return { ok: false, message: notFoundMessage };
+
+  if (hasMysqlConfiguration()) {
+    const database = await getMysqlDatabase();
+    const connection = await database.getConnection();
+
+    try {
+      await connection.beginTransaction();
+      await connection.execute(`DELETE FROM course_registrations WHERE id = ?`, [registrationId]);
+      await connection.execute(`DELETE FROM leads WHERE LOWER(TRIM(email)) = ?`, [
+        normalizeEmail(registration.email),
+      ]);
+      await connection.commit();
+    } catch (error) {
+      await connection.rollback();
+      throw error;
+    } finally {
+      connection.release();
+    }
+  } else {
+    const database = getDatabase();
+    database.exec(`BEGIN IMMEDIATE`);
+    try {
+      database.prepare(`DELETE FROM course_registrations WHERE id = ?`).run(registrationId);
+      database
+        .prepare(`DELETE FROM leads WHERE LOWER(TRIM(email)) = ?`)
+        .run(normalizeEmail(registration.email));
+      database.exec(`COMMIT`);
+    } catch (error) {
+      database.exec(`ROLLBACK`);
+      throw error;
+    }
+  }
+
+  return { ok: true, name: registration.name, email: registration.email };
 }
 
 export async function listCourseRegistrations(): Promise<CourseRegistrationRecord[]> {

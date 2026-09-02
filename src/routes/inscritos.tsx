@@ -1,7 +1,16 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Download, LockKeyhole, RefreshCw, Search, Users } from "lucide-react";
+import {
+  ChevronLeft,
+  ChevronRight,
+  Download,
+  LockKeyhole,
+  RefreshCw,
+  Search,
+  Users,
+} from "lucide-react";
 import { FormEvent, useEffect, useMemo, useState } from "react";
 
+import { Pagination, PaginationContent, PaginationItem } from "../components/ui/pagination";
 import { getLeads } from "../lib/leads.functions";
 import type { LeadRecord } from "../lib/leads.schema";
 
@@ -11,6 +20,8 @@ const dateFormatter = new Intl.DateTimeFormat("pt-BR", {
   dateStyle: "short",
   timeStyle: "short",
 });
+
+const leadsPerPage = 40;
 
 function formatDate(value: string) {
   return dateFormatter.format(new Date(value));
@@ -29,6 +40,7 @@ function LeadsAdmin() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [checkingSession, setCheckingSession] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
 
   const filteredLeads = useMemo(() => {
     if (!leads) return [];
@@ -41,6 +53,24 @@ function LeadsAdmin() {
       ),
     );
   }, [leads, query]);
+
+  const totalPages = Math.max(1, Math.ceil(filteredLeads.length / leadsPerPage));
+  const paginatedLeads = useMemo(() => {
+    const firstLead = (currentPage - 1) * leadsPerPage;
+    return filteredLeads.slice(firstLead, firstLead + leadsPerPage);
+  }, [currentPage, filteredLeads]);
+
+  const paginationPages = useMemo(() => {
+    if (totalPages <= 7) return Array.from({ length: totalPages }, (_, index) => index + 1);
+
+    return [...new Set([1, currentPage - 1, currentPage, currentPage + 1, totalPages])]
+      .filter((page) => page >= 1 && page <= totalPages)
+      .sort((pageA, pageB) => pageA - pageB);
+  }, [currentPage, totalPages]);
+
+  useEffect(() => {
+    setCurrentPage((page) => Math.min(page, totalPages));
+  }, [totalPages]);
 
   useEffect(() => {
     let active = true;
@@ -205,7 +235,10 @@ function LeadsAdmin() {
               <input
                 type="search"
                 value={query}
-                onChange={(event) => setQuery(event.target.value)}
+                onChange={(event) => {
+                  setQuery(event.target.value);
+                  setCurrentPage(1);
+                }}
                 placeholder="Buscar nome, WhatsApp ou e-mail"
               />
             </label>
@@ -222,7 +255,7 @@ function LeadsAdmin() {
                 </tr>
               </thead>
               <tbody>
-                {filteredLeads.map((lead) => (
+                {paginatedLeads.map((lead) => (
                   <tr key={lead.id}>
                     <td data-label="Nome">{lead.name}</td>
                     <td data-label="WhatsApp">
@@ -248,6 +281,62 @@ function LeadsAdmin() {
               </div>
             ) : null}
           </div>
+
+          {filteredLeads.length > 0 ? (
+            <div className="admin-pagination">
+              <p>
+                Mostrando <strong>{(currentPage - 1) * leadsPerPage + 1}</strong>–
+                <strong>{Math.min(currentPage * leadsPerPage, filteredLeads.length)}</strong> de
+                <strong>{filteredLeads.length}</strong>
+              </p>
+
+              <Pagination className="admin-pagination-nav">
+                <PaginationContent>
+                  <PaginationItem>
+                    <button
+                      type="button"
+                      className="admin-pagination-button is-direction"
+                      onClick={() => setCurrentPage((page) => Math.max(1, page - 1))}
+                      disabled={currentPage === 1}
+                    >
+                      <ChevronLeft aria-hidden="true" /> Anterior
+                    </button>
+                  </PaginationItem>
+
+                  {paginationPages.map((page, index) => {
+                    const previousPage = paginationPages[index - 1];
+                    return (
+                      <PaginationItem key={page}>
+                        {previousPage && page - previousPage > 1 ? (
+                          <span className="admin-pagination-ellipsis">…</span>
+                        ) : null}
+                        <button
+                          type="button"
+                          className={`admin-pagination-button ${page === currentPage ? "is-active" : ""}`}
+                          onClick={() => setCurrentPage(page)}
+                          aria-current={page === currentPage ? "page" : undefined}
+                          aria-label={`Ir para a página ${page}`}
+                        >
+                          {page}
+                        </button>
+                      </PaginationItem>
+                    );
+                  })}
+
+                  <PaginationItem>
+                    <button
+                      type="button"
+                      className="admin-pagination-button is-direction"
+                      onClick={() => setCurrentPage((page) => Math.min(totalPages, page + 1))}
+                      disabled={currentPage === totalPages}
+                    >
+                      Próxima <ChevronRight aria-hidden="true" />
+                    </button>
+                  </PaginationItem>
+                </PaginationContent>
+              </Pagination>
+            </div>
+          ) : null}
         </section>
       </div>
     </main>

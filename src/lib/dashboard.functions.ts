@@ -2,8 +2,13 @@ import { createServerFn } from "@tanstack/react-start";
 import { setResponseHeaders } from "@tanstack/react-start/server";
 
 import { authorizeMainAdmin } from "./admin-session.server";
-import { approveCourseInvite, listCourseRegistrations } from "./course.server";
-import { courseApprovalSchema } from "./course.schema";
+import {
+  approveCourseInvite,
+  deleteCourseContact,
+  listCourseRegistrations,
+  markCourseContacted,
+} from "./course.server";
+import { courseApprovalSchema, courseContactActionSchema } from "./course.schema";
 import { listLeads } from "./leads.server";
 import { adminAccessSchema } from "./leads.schema";
 
@@ -33,4 +38,20 @@ export const approveAdminRegistration = createServerFn({ method: "POST" })
     disableResponseCache();
     if (!authorizeMainAdmin(data.password)) throw new Error("Acesso não autorizado.");
     return await approveCourseInvite(data.registrationId);
+  });
+
+export const markAdminContacted = createServerFn({ method: "POST" })
+  .validator(courseContactActionSchema)
+  .handler(async ({ data }) => {
+    disableResponseCache();
+    if (!authorizeMainAdmin(data.password)) throw new Error("Acesso não autorizado.");
+    return await markCourseContacted(data.registrationId);
+  });
+
+export const deleteAdminContact = createServerFn({ method: "POST" })
+  .validator(courseContactActionSchema)
+  .handler(async ({ data }) => {
+    disableResponseCache();
+    if (!authorizeMainAdmin(data.password)) throw new Error("Acesso não autorizado.");
+    return await deleteCourseContact(data.registrationId);
   });

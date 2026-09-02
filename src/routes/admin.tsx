@@ -19,6 +19,7 @@ import {
   ShieldCheck,
   Sparkles,
   TrendingUp,
+  Trash2,
   UserCheck,
   UserPlus,
   Users,
@@ -26,7 +27,23 @@ import {
 import { FormEvent, useEffect, useMemo, useState } from "react";
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../components/ui/tabs";
-import { approveAdminRegistration, getAdminOverview } from "../lib/dashboard.functions";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "../components/ui/alert-dialog";
+import {
+  approveAdminRegistration,
+  deleteAdminContact,
+  getAdminOverview,
+  markAdminContacted,
+} from "../lib/dashboard.functions";
 import type { CourseRegistrationRecord } from "../lib/course.schema";
 import type { LeadRecord } from "../lib/leads.schema";
 
@@ -201,6 +218,8 @@ function AdminOverviewPage() {
   const [loading, setLoading] = useState(false);
   const [checkingSession, setCheckingSession] = useState(true);
   const [actionId, setActionId] = useState<number | null>(null);
+  const [contactActionId, setContactActionId] = useState<number | null>(null);
+  const [deleteActionId, setDeleteActionId] = useState<number | null>(null);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
@@ -284,16 +303,37 @@ function AdminOverviewPage() {
   }, [data]);
 
   const expirationStats = useMemo(() => {
-    const active = expirationClients.filter((client) => !client.registration.accessExpired);
+    const active = expirationClients.filter(
+      (client) => !client.registration.contactedAt && !client.registration.accessExpired,
+    );
+    const pending = expirationClients.filter((client) => !client.registration.contactedAt);
     return {
       active: active.length,
       contactNow: active.filter((client) => client.contactNow).length,
       nextThreeDays: active.filter(
         (client) => !client.contactNow && client.waitingDays > 0 && client.waitingDays <= 3,
       ).length,
-      expired: expirationClients.filter((client) => client.registration.accessExpired).length,
+      expired: pending.filter((client) => client.registration.accessExpired).length,
+      finalized: expirationClients.filter((client) => client.registration.contactedAt).length,
     };
   }, [expirationClients]);
+
+  const agendaClients = useMemo(
+    () => expirationClients.filter((client) => !client.registration.contactedAt),
+    [expirationClients],
+  );
+
+  const finalizedClients = useMemo(
+    () =>
+      expirationClients
+        .filter((client) => client.registration.contactedAt)
+        .sort(
+          (clientA, clientB) =>
+            new Date(clientB.registration.contactedAt ?? 0).getTime() -
+            new Date(clientA.registration.contactedAt ?? 0).getTime(),
+        ),
+    [expirationClients],
+  );
 
   const engagementClients = useMemo(
     () =>
@@ -382,6 +422,52 @@ function AdminOverviewPage() {
     }
   }
 
+  async function markContacted(client: ExpirationClient) {
+    setContactActionId(client.registration.id);
+    setError("");
+    setSuccess("");
+
+    try {
+      const result = await markAdminContacted({
+        data: { password, registrationId: client.registration.id },
+      });
+      if (!result.ok) {
+        setError(result.message);
+        return;
+      }
+
+      setSuccess(`${result.name} foi movido para a lista de leads finalizados.`);
+      await loadOverview(password);
+    } catch {
+      setError("Não foi possível marcar este cliente como contatado.");
+    } finally {
+      setContactActionId(null);
+    }
+  }
+
+  async function deleteContact(client: ExpirationClient) {
+    setDeleteActionId(client.registration.id);
+    setError("");
+    setSuccess("");
+
+    try {
+      const result = await deleteAdminContact({
+        data: { password, registrationId: client.registration.id },
+      });
+      if (!result.ok) {
+        setError(result.message);
+        return;
+      }
+
+      setSuccess(`${result.name} foi excluído do banco de dados.`);
+      await loadOverview(password);
+    } catch {
+      setError("Não foi possível excluir este contato.");
+    } finally {
+      setDeleteActionId(null);
+    }
+  }
+
   function exportLeads() {
     if (!data) return;
     downloadCsv(`leads-nexum-${new Date().toISOString().slice(0, 10)}.csv`, [
@@ -414,6 +500,7 @@ function AdminOverviewPage() {
         "Baixou o indicador",
         "Download em",
         "Última atividade",
+        "Contatado em",
       ],
       ...data.registrations.map((registration) => [
         registration.id,
@@ -430,6 +517,7 @@ function AdminOverviewPage() {
         registration.indicatorDownloaded ? "Sim" : "Não",
         formatDate(registration.indicatorDownloadedAt),
         formatDate(registration.lastActivityAt),
+        formatDate(registration.contactedAt),
       ]),
     ]);
   }
@@ -556,6 +644,13 @@ function AdminOverviewPage() {
             </TabsTrigger>
           </TabsList>
 
+          {error ? (
+            <p className="overview-feedback is-error" role="alert">
+              {error}
+            </p>
+          ) : null}
+          {success ? <p className="overview-feedback is-success">{success}</p> : null}
+
           <TabsContent className="overview-tab-content" value="overview">
             <section className="overview-rule" aria-label="Regra de validade dos acessos">
               <CalendarClock aria-hidden="true" />
@@ -574,13 +669,6 @@ function AdminOverviewPage() {
                 </span>
               )}
             </section>
-
-            {error ? (
-              <p className="overview-feedback is-error" role="alert">
-                {error}
-              </p>
-            ) : null}
-            {success ? <p className="overview-feedback is-success">{success}</p> : null}
 
             <section className="overview-kpis" aria-label="Indicadores principais">
               <article>
@@ -845,10 +933,10 @@ function AdminOverviewPage() {
                   <strong>{expirationStats.nextThreeDays}</strong>
                   <small>Nos próximos 3 dias</small>
                 </article>
-                <article className="is-expired">
-                  <span>Expirados</span>
-                  <strong>{expirationStats.expired}</strong>
-                  <small>Prazo já encerrado</small>
+                <article className="is-complete">
+                  <span>Leads finalizados</span>
+                  <strong>{expirationStats.finalized}</strong>
+                  <small>Contato já realizado</small>
                 </article>
               </div>
             </section>
@@ -878,12 +966,13 @@ function AdminOverviewPage() {
                   <span role="columnheader">Situação</span>
                   <span role="columnheader">Cliente e contato</span>
                   <span role="columnheader">Tempo ativo</span>
+                  <span role="columnheader">Aulas e indicador</span>
                   <span role="columnheader">Expiração</span>
                   <span role="columnheader">Ação</span>
                 </div>
 
                 <div className="renewal-table-body">
-                  {expirationClients.map((client) => {
+                  {agendaClients.map((client) => {
                     const whatsappLink = renewalWhatsappLink(client);
                     const isExpired = client.registration.accessExpired;
                     return (
@@ -946,6 +1035,30 @@ function AdminOverviewPage() {
                           </small>
                         </div>
 
+                        <div className="renewal-engagement" role="cell">
+                          <div>
+                            <strong>{client.registration.courseProgress}% das aulas</strong>
+                            <span>{client.registration.completedLessons.length}/4 concluídas</span>
+                          </div>
+                          <span className="renewal-course-track" aria-hidden="true">
+                            <span style={{ width: `${client.registration.courseProgress}%` }} />
+                          </span>
+                          <small
+                            className={
+                              client.registration.indicatorDownloaded ? "is-downloaded" : ""
+                            }
+                          >
+                            {client.registration.indicatorDownloaded ? (
+                              <PackageCheck aria-hidden="true" />
+                            ) : (
+                              <Download aria-hidden="true" />
+                            )}
+                            {client.registration.indicatorDownloaded
+                              ? "Indicador baixado"
+                              : "Indicador não baixado"}
+                          </small>
+                        </div>
+
                         <div className="renewal-expiration" role="cell">
                           <time dateTime={client.registration.expiresAt ?? undefined}>
                             {formatDate(client.registration.expiresAt, true)}
@@ -961,7 +1074,7 @@ function AdminOverviewPage() {
                           </small>
                         </div>
 
-                        <div className="renewal-action" role="cell">
+                        <div className="renewal-actions" role="cell">
                           {whatsappLink ? (
                             <a href={whatsappLink} target="_blank" rel="noreferrer">
                               <MessageCircle aria-hidden="true" /> Falar no WhatsApp
@@ -969,15 +1082,130 @@ function AdminOverviewPage() {
                           ) : (
                             <span>Sem telefone</span>
                           )}
+                          <button
+                            type="button"
+                            onClick={() => markContacted(client)}
+                            disabled={contactActionId === client.registration.id}
+                          >
+                            <UserCheck aria-hidden="true" />
+                            {contactActionId === client.registration.id
+                              ? "Salvando..."
+                              : "Marcar contatado"}
+                          </button>
                         </div>
                       </article>
                     );
                   })}
 
-                  {expirationClients.length === 0 ? (
-                    <div className="overview-empty">
-                      Nenhum acesso aprovado com prazo de expiração ainda.
-                    </div>
+                  {agendaClients.length === 0 ? (
+                    <div className="overview-empty">Nenhum cliente aguardando contato.</div>
+                  ) : null}
+                </div>
+              </div>
+            </section>
+
+            <section className="overview-panel finalized-list-panel">
+              <div className="overview-panel-heading overview-section-heading">
+                <div>
+                  <span className="admin-eyebrow">Histórico comercial</span>
+                  <h2>Leads finalizados</h2>
+                  <p>Clientes que já receberam o contato da equipe.</p>
+                </div>
+                <span className="finalized-count">
+                  <UserCheck aria-hidden="true" /> {finalizedClients.length} finalizados
+                </span>
+              </div>
+
+              <div className="finalized-table" role="table" aria-label="Leads finalizados">
+                <div className="finalized-table-head" role="row">
+                  <span role="columnheader">Cliente</span>
+                  <span role="columnheader">Contato realizado</span>
+                  <span role="columnheader">Aulas</span>
+                  <span role="columnheader">Indicador</span>
+                  <span role="columnheader">Ação</span>
+                </div>
+
+                <div className="finalized-table-body">
+                  {finalizedClients.map((client) => (
+                    <article className="finalized-row" role="row" key={client.registration.id}>
+                      <div className="renewal-client" role="cell">
+                        <span className="renewal-avatar" aria-hidden="true">
+                          {client.name.charAt(0).toLocaleUpperCase("pt-BR")}
+                        </span>
+                        <div>
+                          <strong>{client.name}</strong>
+                          <small>{client.email}</small>
+                          {client.whatsapp ? <span>{client.whatsapp}</span> : null}
+                        </div>
+                      </div>
+
+                      <div className="finalized-date" role="cell">
+                        <strong>{formatDate(client.registration.contactedAt)}</strong>
+                        <small>Marcado como contatado</small>
+                      </div>
+
+                      <div className="finalized-course" role="cell">
+                        <strong>{client.registration.courseProgress}%</strong>
+                        <small>{client.registration.completedLessons.length}/4 aulas</small>
+                      </div>
+
+                      <div className="engagement-download" role="cell">
+                        <span
+                          className={
+                            client.registration.indicatorDownloaded ? "is-done" : "is-pending"
+                          }
+                        >
+                          {client.registration.indicatorDownloaded ? (
+                            <PackageCheck aria-hidden="true" />
+                          ) : (
+                            <Download aria-hidden="true" />
+                          )}
+                          {client.registration.indicatorDownloaded ? "Baixou" : "Não baixou"}
+                        </span>
+                      </div>
+
+                      <div className="finalized-actions" role="cell">
+                        {client.whatsapp ? (
+                          <a href={renewalWhatsappLink(client)} target="_blank" rel="noreferrer">
+                            <MessageCircle aria-hidden="true" /> WhatsApp
+                          </a>
+                        ) : null}
+
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <button type="button" className="finalized-delete-button">
+                              <Trash2 aria-hidden="true" /> Excluir
+                            </button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent className="nexum-delete-dialog">
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>Excluir {client.name}?</AlertDialogTitle>
+                              <AlertDialogDescription>
+                                Esta ação removerá definitivamente o lead, o acesso ao curso e todo
+                                o histórico vinculado ao e-mail {client.email}. Não será possível
+                                desfazer.
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                              <AlertDialogAction
+                                className="nexum-delete-confirm"
+                                onClick={() => deleteContact(client)}
+                                disabled={deleteActionId === client.registration.id}
+                              >
+                                {deleteActionId === client.registration.id
+                                  ? "Excluindo..."
+                                  : "Excluir definitivamente"}
+                              </AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
+                      </div>
+                    </article>
+                  ))}
+
+                  {finalizedClients.length === 0 ? (
+                    <div className="overview-empty">Nenhum lead finalizado ainda.</div>
                   ) : null}
                 </div>
               </div>
