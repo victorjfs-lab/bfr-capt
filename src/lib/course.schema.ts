@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+import { MEMBER_LESSON_COUNT } from "./course-content";
+
 const emailSchema = z.string().trim().email("Informe um e-mail válido.").max(180).toLowerCase();
 const tokenSchema = z
   .string()
@@ -24,8 +26,8 @@ export const courseTokenSchema = z.object({
 export const courseProgressSchema = z.object({
   token: tokenSchema,
   completedLessons: z
-    .array(z.number().int().min(1).max(4))
-    .max(4)
+    .array(z.number().int().min(1).max(MEMBER_LESSON_COUNT))
+    .max(MEMBER_LESSON_COUNT)
     .transform((lessons) => [...new Set(lessons)].sort((lessonA, lessonB) => lessonA - lessonB)),
 });
 

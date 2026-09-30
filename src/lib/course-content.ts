@@ -37,3 +37,16 @@ export const nexumLessons = [
     },
   },
 ] as const;
+
+export const memberNexumLessons = [
+  ...nexumLessons,
+  {
+    number: 5,
+    title: "IMPORTANTE: revisão operacional e método Scalping",
+    description:
+      "Revisão dos pontos essenciais da operação e aplicação prática do método Scalping.",
+    videoId: "1231677282",
+  },
+] as const;
+
+export const MEMBER_LESSON_COUNT = memberNexumLessons.length;

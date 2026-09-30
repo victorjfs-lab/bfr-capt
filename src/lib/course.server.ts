@@ -9,6 +9,7 @@ import type {
   CoursePublicInvitation,
   CourseRegistrationRecord,
 } from "./course.schema";
+import { MEMBER_LESSON_COUNT } from "./course-content";
 import { getDatabase, getMysqlDatabase, hasMysqlConfiguration } from "./leads.server";
 
 const notFoundMessage = "Usuário não encontrado, confirmar E-mail.";
@@ -64,7 +65,10 @@ function normalizeCompletedLessons(value: unknown) {
       ...new Set(
         parsed.filter(
           (lesson): lesson is number =>
-            typeof lesson === "number" && Number.isInteger(lesson) && lesson >= 1 && lesson <= 4,
+            typeof lesson === "number" &&
+            Number.isInteger(lesson) &&
+            lesson >= 1 &&
+            lesson <= MEMBER_LESSON_COUNT,
         ),
       ),
     ].sort((lessonA, lessonB) => lessonA - lessonB);
@@ -96,7 +100,7 @@ function normalizeCourseRow(row: Record<string, unknown>): CourseRegistrationRec
     expiresAt,
     accessExpired: expiresAt ? new Date(expiresAt).getTime() <= Date.now() : false,
     completedLessons,
-    courseProgress: Math.round((completedLessons.length / 4) * 100),
+    courseProgress: Math.round((completedLessons.length / MEMBER_LESSON_COUNT) * 100),
     indicatorDownloaded: Boolean(indicatorDownloadedAt),
     indicatorDownloadedAt,
     lastActivityAt: row.lastActivityAt ? String(row.lastActivityAt) : null,
@@ -488,7 +492,10 @@ export async function updateCourseProgress(
 
   const normalizedLessons = [
     ...new Set(
-      completedLessons.filter((lesson) => Number.isInteger(lesson) && lesson >= 1 && lesson <= 4),
+      completedLessons.filter(
+        (lesson) =>
+          Number.isInteger(lesson) && lesson >= 1 && lesson <= MEMBER_LESSON_COUNT,
+      ),
     ),
   ].sort((lessonA, lessonB) => lessonA - lessonB);
   const completedLessonsJson = JSON.stringify(normalizedLessons);

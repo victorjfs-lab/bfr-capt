@@ -43,6 +43,7 @@ import {
   getAdminOverview,
   markAdminContacted,
 } from "../lib/dashboard.functions";
+import { MEMBER_LESSON_COUNT } from "../lib/course-content";
 import type { CourseRegistrationRecord } from "../lib/course.schema";
 import type { LeadRecord } from "../lib/leads.schema";
 
@@ -486,7 +487,7 @@ function AdminOverviewPage() {
         formatDate(registration.approvedAt),
         formatDate(registration.expiresAt),
         registration.status === "approved" ? daysUntil(registration.expiresAt) : "—",
-        `${registration.completedLessons.length}/4`,
+        `${registration.completedLessons.length}/${MEMBER_LESSON_COUNT}`,
         `${registration.courseProgress}%`,
         registration.indicatorDownloaded ? "Sim" : "Não",
         formatDate(registration.indicatorDownloadedAt),
@@ -1003,7 +1004,10 @@ function AdminOverviewPage() {
                         <div className="renewal-engagement" role="cell">
                           <div>
                             <strong>{client.registration.courseProgress}% das aulas</strong>
-                            <span>{client.registration.completedLessons.length}/4 concluídas</span>
+                            <span>
+                              {client.registration.completedLessons.length}/{MEMBER_LESSON_COUNT}{" "}
+                              concluídas
+                            </span>
                           </div>
                           <span className="renewal-course-track" aria-hidden="true">
                             <span style={{ width: `${client.registration.courseProgress}%` }} />
@@ -1111,7 +1115,9 @@ function AdminOverviewPage() {
 
                       <div className="finalized-course" role="cell">
                         <strong>{client.registration.courseProgress}%</strong>
-                        <small>{client.registration.completedLessons.length}/4 aulas</small>
+                        <small>
+                          {client.registration.completedLessons.length}/{MEMBER_LESSON_COUNT} aulas
+                        </small>
                       </div>
 
                       <div className="engagement-download" role="cell">
@@ -1204,7 +1210,7 @@ function AdminOverviewPage() {
               <article className="is-complete">
                 <span>Curso concluído</span>
                 <strong>{engagementStats.completed}</strong>
-                <small>100% das quatro aulas</small>
+                <small>100% das {MEMBER_LESSON_COUNT} aulas</small>
               </article>
               <article className="is-downloaded">
                 <span>Baixaram o indicador</span>
@@ -1259,7 +1265,9 @@ function AdminOverviewPage() {
                         <div className="engagement-progress" role="cell">
                           <div>
                             <strong>{registration.courseProgress}%</strong>
-                            <span>{registration.completedLessons.length}/4 aulas</span>
+                            <span>
+                              {registration.completedLessons.length}/{MEMBER_LESSON_COUNT} aulas
+                            </span>
                           </div>
                           <span className="engagement-progress-track" aria-hidden="true">
                             <span style={{ width: `${registration.courseProgress}%` }} />

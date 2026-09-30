@@ -15,7 +15,7 @@ import {
 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
-import { nexumLessons as lessons } from "../lib/course-content";
+import { memberNexumLessons as lessons } from "../lib/course-content";
 import { requestCourseAccess, saveCourseProgress } from "../lib/course.functions";
 
 export const Route = createFileRoute("/curso")({
@@ -319,7 +319,7 @@ function CoursePage() {
               <div className="course-module-card">
                 <div className="course-module-heading">
                   <span>Mini curso NEXUM</span>
-                  <strong>4 aulas práticas</strong>
+                  <strong>{lessons.length} aulas práticas</strong>
                 </div>
 
                 <div className="course-lessons-list">
