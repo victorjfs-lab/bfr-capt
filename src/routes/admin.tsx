@@ -589,6 +589,9 @@ function AdminOverviewPage() {
             <Link to="/validacao" className="overview-navigation-link">
               <ShieldCheck aria-hidden="true" /> Validações <ExternalLink aria-hidden="true" />
             </Link>
+            <Link to="/consulta-cliente" className="overview-navigation-link">
+              <UserCheck aria-hidden="true" /> Consultar cliente <ExternalLink aria-hidden="true" />
+            </Link>
             <button
               type="button"
               className="admin-secondary-button"

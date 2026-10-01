@@ -15,6 +15,7 @@ import { Route as NexumaulaabertaRouteImport } from './routes/nexumaulaaberta'
 import { Route as InscritosRouteImport } from './routes/inscritos'
 import { Route as InscricaoRouteImport } from './routes/inscricao'
 import { Route as CursoRouteImport } from './routes/curso'
+import { Route as ConsultaClienteRouteImport } from './routes/consulta-cliente'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ApiHotmartRouteImport } from './routes/api/hotmart'
@@ -49,6 +50,11 @@ const CursoRoute = CursoRouteImport.update({
   path: '/curso',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ConsultaClienteRoute = ConsultaClienteRouteImport.update({
+  id: '/consulta-cliente',
+  path: '/consulta-cliente',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AdminRoute = AdminRouteImport.update({
   id: '/admin',
   path: '/admin',
@@ -68,6 +74,7 @@ const ApiHotmartRoute = ApiHotmartRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
+  '/consulta-cliente': typeof ConsultaClienteRoute
   '/curso': typeof CursoRoute
   '/inscricao': typeof InscricaoRoute
   '/inscritos': typeof InscritosRoute
@@ -79,6 +86,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
+  '/consulta-cliente': typeof ConsultaClienteRoute
   '/curso': typeof CursoRoute
   '/inscricao': typeof InscricaoRoute
   '/inscritos': typeof InscritosRoute
@@ -91,6 +99,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
+  '/consulta-cliente': typeof ConsultaClienteRoute
   '/curso': typeof CursoRoute
   '/inscricao': typeof InscricaoRoute
   '/inscritos': typeof InscritosRoute
@@ -104,6 +113,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/admin'
+    | '/consulta-cliente'
     | '/curso'
     | '/inscricao'
     | '/inscritos'
@@ -115,6 +125,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/admin'
+    | '/consulta-cliente'
     | '/curso'
     | '/inscricao'
     | '/inscritos'
@@ -126,6 +137,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/admin'
+    | '/consulta-cliente'
     | '/curso'
     | '/inscricao'
     | '/inscritos'
@@ -138,6 +150,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AdminRoute: typeof AdminRoute
+  ConsultaClienteRoute: typeof ConsultaClienteRoute
   CursoRoute: typeof CursoRoute
   InscricaoRoute: typeof InscricaoRoute
   InscritosRoute: typeof InscritosRoute
@@ -191,6 +204,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CursoRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/consulta-cliente': {
+      id: '/consulta-cliente'
+      path: '/consulta-cliente'
+      fullPath: '/consulta-cliente'
+      preLoaderRoute: typeof ConsultaClienteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/admin': {
       id: '/admin'
       path: '/admin'
@@ -218,6 +238,7 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRoute: AdminRoute,
+  ConsultaClienteRoute: ConsultaClienteRoute,
   CursoRoute: CursoRoute,
   InscricaoRoute: InscricaoRoute,
   InscritosRoute: InscritosRoute,

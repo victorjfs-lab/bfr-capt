@@ -121,7 +121,7 @@ function RootShell({ children }: { children: ReactNode }) {
         <HeadContent />
         <script
           dangerouslySetInnerHTML={{
-            __html: `(function(){try{var p=location.pathname.split('/')[1];var i=p==='admin'||p==='validacao'||p==='inscritos';if(!i){document.documentElement.dataset.theme='dark';document.documentElement.dataset.fontSize='standard';return;}var t=localStorage.getItem('nexum-theme');var f=localStorage.getItem('nexum-font-size');document.documentElement.dataset.theme=t==='light'?'light':'dark';document.documentElement.dataset.fontSize=f==='large'?'large':'standard';}catch(e){document.documentElement.dataset.theme='dark';document.documentElement.dataset.fontSize='standard';}})();`,
+            __html: `(function(){try{var p=location.pathname.split('/')[1];var i=p==='admin'||p==='validacao'||p==='inscritos'||p==='consulta-cliente';if(!i){document.documentElement.dataset.theme='dark';document.documentElement.dataset.fontSize='standard';return;}var t=localStorage.getItem('nexum-theme');var f=localStorage.getItem('nexum-font-size');document.documentElement.dataset.theme=t==='light'?'light':'dark';document.documentElement.dataset.fontSize=f==='large'?'large':'standard';}catch(e){document.documentElement.dataset.theme='dark';document.documentElement.dataset.fontSize='standard';}})();`,
           }}
         />
         <script
@@ -154,7 +154,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
   const pathname = useLocation({ select: (location) => location.pathname });
-  const isInternalPage = /^\/(admin|validacao|inscritos)(\/|$)/.test(pathname);
+  const isInternalPage = /^\/(admin|validacao|inscritos|consulta-cliente)(\/|$)/.test(pathname);
 
   useEffect(() => {
     if (!isInternalPage) {

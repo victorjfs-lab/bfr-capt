@@ -264,6 +264,17 @@ async function findRegistrationByEmail(email: string): Promise<CourseRegistratio
   return row ? normalizeCourseRow(row) : null;
 }
 
+export async function findApprovedCourseRegistrationByEmail(
+  email: string,
+): Promise<CourseRegistrationRecord | null> {
+  const registration = await findRegistrationByEmail(email);
+  if (!registration || registration.status !== "approved" || !registration.approvedAt) {
+    return null;
+  }
+
+  return registration;
+}
+
 async function findRegistrationByToken(token: string): Promise<CourseRegistrationRecord | null> {
   await ensureCourseTable();
 
@@ -493,8 +504,7 @@ export async function updateCourseProgress(
   const normalizedLessons = [
     ...new Set(
       completedLessons.filter(
-        (lesson) =>
-          Number.isInteger(lesson) && lesson >= 1 && lesson <= MEMBER_LESSON_COUNT,
+        (lesson) => Number.isInteger(lesson) && lesson >= 1 && lesson <= MEMBER_LESSON_COUNT,
       ),
     ),
   ].sort((lessonA, lessonB) => lessonA - lessonB);
