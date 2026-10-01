@@ -472,8 +472,8 @@ function AdminOverviewPage() {
         "Dias restantes",
         "Aulas concluídas",
         "Progresso do curso",
-        "Baixou o indicador",
-        "Download em",
+        "Solicitou o indicador",
+        "Solicitado em",
         "Última atividade",
         "Contatado em",
       ],
@@ -612,7 +612,7 @@ function AdminOverviewPage() {
               ) : null}
             </TabsTrigger>
             <TabsTrigger className="overview-tab-trigger" value="engagement">
-              <BookOpenCheck aria-hidden="true" /> Aulas e downloads
+              <BookOpenCheck aria-hidden="true" /> Aulas e indicadores
               {engagementStats.students > 0 ? (
                 <span className="overview-tab-count">{engagementStats.students}</span>
               ) : null}
@@ -1023,8 +1023,8 @@ function AdminOverviewPage() {
                               <Download aria-hidden="true" />
                             )}
                             {client.registration.indicatorDownloaded
-                              ? "Indicador baixado"
-                              : "Indicador não baixado"}
+                              ? "Indicador solicitado"
+                              : "Indicador não solicitado"}
                           </small>
                         </div>
 
@@ -1131,7 +1131,7 @@ function AdminOverviewPage() {
                           ) : (
                             <Download aria-hidden="true" />
                           )}
-                          {client.registration.indicatorDownloaded ? "Baixou" : "Não baixou"}
+                          {client.registration.indicatorDownloaded ? "Solicitou" : "Não solicitou"}
                         </span>
                       </div>
 
@@ -1213,9 +1213,9 @@ function AdminOverviewPage() {
                 <small>100% das {MEMBER_LESSON_COUNT} aulas</small>
               </article>
               <article className="is-downloaded">
-                <span>Baixaram o indicador</span>
+                <span>Solicitaram o indicador</span>
                 <strong>{engagementStats.downloaded}</strong>
-                <small>Download confirmado</small>
+                <small>Pedido enviado pelo WhatsApp</small>
               </article>
             </section>
 
@@ -1224,7 +1224,7 @@ function AdminOverviewPage() {
                 <div>
                   <span className="admin-eyebrow">Dados em tempo real</span>
                   <h2>Engajamento por cliente</h2>
-                  <p>Veja o avanço nas aulas e confirme a entrega dos arquivos do NEXUM.</p>
+                  <p>Veja o avanço nas aulas e acompanhe as solicitações do indicador NEXUM.</p>
                 </div>
                 <button
                   type="button"
@@ -1290,12 +1290,12 @@ function AdminOverviewPage() {
                             ) : (
                               <Download aria-hidden="true" />
                             )}
-                            {registration.indicatorDownloaded ? "Baixou" : "Não baixou"}
+                            {registration.indicatorDownloaded ? "Solicitou" : "Não solicitou"}
                           </span>
                           <small>
                             {registration.indicatorDownloadedAt
                               ? formatDate(registration.indicatorDownloadedAt)
-                              : "Aguardando download"}
+                              : "Aguardando solicitação"}
                           </small>
                         </div>
 

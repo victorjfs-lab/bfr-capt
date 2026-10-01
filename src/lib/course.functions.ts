@@ -7,6 +7,7 @@ import {
   createCourseInvite,
   getPublicInvitation,
   listCourseRegistrations,
+  recordIndicatorRequest,
   registerCourseInvite,
   updateCourseProgress,
 } from "./course.server";
@@ -53,6 +54,13 @@ export const saveCourseProgress = createServerFn({ method: "POST" })
   .handler(async ({ data }) => {
     disableResponseCache();
     return await updateCourseProgress(data.token, data.completedLessons);
+  });
+
+export const requestIndicatorDelivery = createServerFn({ method: "POST" })
+  .validator(courseTokenSchema)
+  .handler(async ({ data }) => {
+    disableResponseCache();
+    return { ok: await recordIndicatorRequest(data.token) };
   });
 
 export const getCourseRegistrations = createServerFn({ method: "POST" })

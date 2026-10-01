@@ -5,7 +5,6 @@ import {
   Check,
   CheckCircle2,
   ChevronRight,
-  Download,
   ExternalLink,
   Headphones,
   LockKeyhole,
@@ -16,7 +15,11 @@ import {
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { memberNexumLessons as lessons } from "../lib/course-content";
-import { requestCourseAccess, saveCourseProgress } from "../lib/course.functions";
+import {
+  requestCourseAccess,
+  requestIndicatorDelivery,
+  saveCourseProgress,
+} from "../lib/course.functions";
 
 export const Route = createFileRoute("/curso")({
   component: CoursePage,
@@ -61,7 +64,7 @@ function CoursePage() {
   const [selectedLesson, setSelectedLesson] = useState(0);
   const [playingLesson, setPlayingLesson] = useState<number | null>(null);
   const [completedLessons, setCompletedLessons] = useState<number[]>([]);
-  const [indicatorDownloaded, setIndicatorDownloaded] = useState(false);
+  const [indicatorRequested, setIndicatorRequested] = useState(false);
   const completedLessonsRef = useRef<number[]>([]);
   const playerIframeRef = useRef<HTMLIFrameElement | null>(null);
 
@@ -94,7 +97,7 @@ function CoursePage() {
         setStudentName(result.name);
         completedLessonsRef.current = mergedProgress;
         setCompletedLessons(mergedProgress);
-        setIndicatorDownloaded(Boolean(result.indicatorDownloaded));
+        setIndicatorRequested(Boolean(result.indicatorDownloaded));
         setAccessState("granted");
 
         if (mergedProgress.length !== serverProgress.length) {
@@ -353,19 +356,26 @@ function CoursePage() {
 
               <div className="course-download-card">
                 <span className="course-download-icon">
-                  <Download aria-hidden="true" />
+                  <MessageCircle aria-hidden="true" />
                 </span>
                 <div>
-                  <span className="course-card-label">Material exclusivo</span>
+                  <span className="course-card-label">Solicite pelo WhatsApp</span>
                   <h3>Indicadores NEXUM</h3>
-                  <p>Baixe o pacote com os três indicadores apresentados no treinamento.</p>
+                  <p>Concluiu as aulas? Envie uma mensagem para receber o indicador.</p>
                 </div>
                 <a
-                  href={`/api/indicadores?convite=${encodeURIComponent(convite)}`}
-                  onClick={() => setIndicatorDownloaded(true)}
+                  href="https://wa.me/554191920291?text=Quero%20solicitar%20o%20indicador%2C%20j%C3%A1%20fiz%20as%20aulas"
+                  target="_blank"
+                  rel="noreferrer"
+                  onClick={() => {
+                    setIndicatorRequested(true);
+                    void requestIndicatorDelivery({ data: { token: convite } }).catch(
+                      () => undefined,
+                    );
+                  }}
                 >
-                  <Download aria-hidden="true" />
-                  {indicatorDownloaded ? "Baixar novamente" : "Baixar indicadores"}
+                  <MessageCircle aria-hidden="true" />
+                  {indicatorRequested ? "Abrir WhatsApp novamente" : "Solicitar indicador"}
                 </a>
               </div>
 

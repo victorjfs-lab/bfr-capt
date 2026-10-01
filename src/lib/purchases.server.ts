@@ -57,7 +57,6 @@ type PurchasesGlobal = typeof globalThis & {
   __nexumMailer?: Transporter;
 };
 
-const publicSiteUrl = "https://nexum.fluxosimplificado.com";
 
 function normalizeRow(row: Record<string, unknown>): PurchaseDeliveryRecord {
   return {
@@ -385,17 +384,6 @@ function escapeHtml(value: string) {
   });
 }
 
-function siteOrigin() {
-  const configured = process.env.PUBLIC_SITE_URL?.trim();
-  if (!configured) return publicSiteUrl;
-
-  const url = new URL(configured);
-  if (!["http:", "https:"].includes(url.protocol)) {
-    throw new Error("PUBLIC_SITE_URL precisa usar HTTP ou HTTPS.");
-  }
-  return url.origin;
-}
-
 export async function sendPurchaseDeliveryEmail(purchase: PurchaseDeliveryRecord) {
   const fromEmail =
     process.env.SMTP_FROM_EMAIL?.trim() ||
@@ -404,7 +392,8 @@ export async function sendPurchaseDeliveryEmail(purchase: PurchaseDeliveryRecord
       ? "noreply@nexum.local"
       : requiredEnvironmentValue("SMTP_USER"));
   const fromName = process.env.SMTP_FROM_NAME?.trim() || "NEXUM";
-  const downloadUrl = `${siteOrigin()}/api/compra/arquivo?token=${purchase.downloadToken}`;
+  const whatsappUrl =
+    "https://wa.me/554191920291?text=Quero%20solicitar%20o%20indicador%2C%20j%C3%A1%20fiz%20as%20aulas";
   const firstName = purchase.buyerName.trim().split(/\s+/)[0] || "Trader";
 
   await mailer().sendMail({
@@ -414,11 +403,11 @@ export async function sendPurchaseDeliveryEmail(purchase: PurchaseDeliveryRecord
     text: [
       `Olá, ${firstName}!`,
       "",
-      "Seu pagamento foi confirmado e o seu indicador NEXUM já está disponível.",
+      "Seu pagamento foi confirmado e o seu acesso ao NEXUM está liberado.",
       "",
-      `Baixe o arquivo por este link: ${downloadUrl}`,
+      `Solicite o indicador pelo WhatsApp: ${whatsappUrl}`,
       "",
-      "Guarde este e-mail para acessar novamente quando precisar.",
+      "Nossa equipe fará a entrega do arquivo pelo atendimento.",
       "",
       "Equipe NEXUM",
     ].join("\n"),
@@ -427,9 +416,9 @@ export async function sendPurchaseDeliveryEmail(purchase: PurchaseDeliveryRecord
         <div style="max-width:600px;margin:0 auto;border:1px solid #32274a;border-radius:18px;background:#100d19;padding:32px">
           <p style="margin:0 0 16px;color:#a566ff;font-size:13px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase">Pagamento confirmado</p>
           <h1 style="margin:0 0 18px;font-size:30px;line-height:1.15">Seu NEXUM está liberado.</h1>
-          <p style="margin:0 0 14px;color:#c9c3d5;font-size:16px;line-height:1.6">Olá, ${escapeHtml(firstName)}! Seu pagamento foi confirmado e o indicador já está disponível para download.</p>
-          <a href="${downloadUrl}" style="display:block;margin:26px 0;padding:17px 22px;border-radius:10px;background:#8a2cff;color:#fff;font-size:16px;font-weight:700;text-align:center;text-decoration:none">BAIXAR INDICADOR NEXUM</a>
-          <p style="margin:0;color:#8f899b;font-size:13px;line-height:1.5">Guarde este e-mail para acessar novamente quando precisar. Se o botão não abrir, copie este endereço:<br><span style="word-break:break-all;color:#b9a8d6">${downloadUrl}</span></p>
+          <p style="margin:0 0 14px;color:#c9c3d5;font-size:16px;line-height:1.6">Olá, ${escapeHtml(firstName)}! Seu pagamento foi confirmado e o seu acesso ao NEXUM está liberado.</p>
+          <a href="${whatsappUrl}" style="display:block;margin:26px 0;padding:17px 22px;border-radius:10px;background:#8a2cff;color:#fff;font-size:16px;font-weight:700;text-align:center;text-decoration:none">SOLICITAR INDICADOR NO WHATSAPP</a>
+          <p style="margin:0;color:#8f899b;font-size:13px;line-height:1.5">Nossa equipe fará a entrega do arquivo pelo atendimento no WhatsApp.</p>
         </div>
       </div>
     `,

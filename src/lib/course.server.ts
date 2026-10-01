@@ -529,20 +529,20 @@ export async function updateCourseProgress(
   };
 }
 
-export async function recordIndicatorDownload(token: string) {
+export async function recordIndicatorRequest(token: string) {
   const registration = await findRegistrationByToken(token);
   if (!registration || registration.status !== "approved" || registration.accessExpired) {
     return false;
   }
 
-  const downloadedAt = new Date().toISOString();
+  const requestedAt = new Date().toISOString();
   if (hasMysqlConfiguration()) {
     const database = await getMysqlDatabase();
     await database.execute(
       `UPDATE course_registrations
        SET indicator_downloaded_at = COALESCE(indicator_downloaded_at, ?), last_activity_at = ?
        WHERE id = ?`,
-      [downloadedAt, downloadedAt, registration.id],
+      [requestedAt, requestedAt, registration.id],
     );
   } else {
     getDatabase()
@@ -551,7 +551,7 @@ export async function recordIndicatorDownload(token: string) {
          SET indicator_downloaded_at = COALESCE(indicator_downloaded_at, ?), last_activity_at = ?
          WHERE id = ?`,
       )
-      .run(downloadedAt, downloadedAt, registration.id);
+      .run(requestedAt, requestedAt, registration.id);
   }
 
   return true;
