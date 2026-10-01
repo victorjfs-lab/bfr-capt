@@ -64,7 +64,6 @@ function CoursePage() {
   const [selectedLesson, setSelectedLesson] = useState(0);
   const [playingLesson, setPlayingLesson] = useState<number | null>(null);
   const [completedLessons, setCompletedLessons] = useState<number[]>([]);
-  const [indicatorRequested, setIndicatorRequested] = useState(false);
   const completedLessonsRef = useRef<number[]>([]);
   const playerIframeRef = useRef<HTMLIFrameElement | null>(null);
 
@@ -97,7 +96,6 @@ function CoursePage() {
         setStudentName(result.name);
         completedLessonsRef.current = mergedProgress;
         setCompletedLessons(mergedProgress);
-        setIndicatorRequested(Boolean(result.indicatorDownloaded));
         setAccessState("granted");
 
         if (mergedProgress.length !== serverProgress.length) {
@@ -368,14 +366,13 @@ function CoursePage() {
                   target="_blank"
                   rel="noreferrer"
                   onClick={() => {
-                    setIndicatorRequested(true);
                     void requestIndicatorDelivery({ data: { token: convite } }).catch(
                       () => undefined,
                     );
                   }}
                 >
                   <MessageCircle aria-hidden="true" />
-                  {indicatorRequested ? "Abrir WhatsApp novamente" : "Solicitar indicador"}
+                  Solicitar o indicador agora
                 </a>
               </div>
 
