@@ -46,6 +46,7 @@ export type CourseRegistrationRecord = {
   id: number;
   name: string;
   email: string;
+  whatsapp: string;
   inviteToken: string;
   status: CourseInviteStatus;
   createdAt: string;

@@ -10,7 +10,7 @@ import type {
   CourseRegistrationRecord,
 } from "./course.schema";
 import { MEMBER_LESSON_COUNT } from "./course-content";
-import { getDatabase, getMysqlDatabase, hasMysqlConfiguration } from "./leads.server";
+import { getDatabase, getMysqlDatabase, hasMysqlConfiguration, listLeads } from "./leads.server";
 
 const notFoundMessage = "Usuário não encontrado, confirmar E-mail.";
 export const courseAccessDays = 25;
@@ -92,6 +92,7 @@ function normalizeCourseRow(row: Record<string, unknown>): CourseRegistrationRec
     id: Number(row.id),
     name: String(row.name),
     email: String(row.email),
+    whatsapp: row.whatsapp ? String(row.whatsapp) : "",
     inviteToken: String(row.inviteToken),
     status,
     createdAt: String(row.createdAt),
@@ -641,6 +642,8 @@ export async function deleteCourseContact(
 export async function listCourseRegistrations(): Promise<CourseRegistrationRecord[]> {
   await ensureCourseTable();
 
+  let registrations: CourseRegistrationRecord[];
+
   if (hasMysqlConfiguration()) {
     const database = await getMysqlDatabase();
     const [rows] = await database.query<MysqlCourseRow[]>(
@@ -648,18 +651,29 @@ export async function listCourseRegistrations(): Promise<CourseRegistrationRecor
        FROM course_registrations
        ORDER BY created_at DESC, id DESC`,
     );
-    return rows.map(normalizeCourseRow);
+    registrations = rows.map(normalizeCourseRow);
+  } else {
+    const rows = getDatabase()
+      .prepare(
+        `SELECT ${courseSelect}
+         FROM course_registrations
+         ORDER BY created_at DESC, id DESC`,
+      )
+      .all() as Record<string, unknown>[];
+
+    registrations = rows.map(normalizeCourseRow);
   }
 
-  const rows = getDatabase()
-    .prepare(
-      `SELECT ${courseSelect}
-       FROM course_registrations
-       ORDER BY created_at DESC, id DESC`,
-    )
-    .all() as Record<string, unknown>[];
+  const whatsappByEmail = new Map<string, string>();
+  for (const lead of await listLeads()) {
+    const email = normalizeEmail(lead.email);
+    if (!whatsappByEmail.has(email)) whatsappByEmail.set(email, lead.whatsapp);
+  }
 
-  return rows.map(normalizeCourseRow);
+  return registrations.map((registration) => ({
+    ...registration,
+    whatsapp: whatsappByEmail.get(normalizeEmail(registration.email)) ?? "",
+  }));
 }
 
 export { notFoundMessage };
