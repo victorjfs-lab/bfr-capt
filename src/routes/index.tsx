@@ -132,7 +132,7 @@ function Index() {
                 <div className="reference-video">
                   {videoStarted ? (
                     <iframe
-                      src="https://player.vimeo.com/video/1218385882?autoplay=1&color=8a2cff&title=0&portrait=0&byline=0"
+                      src="https://www.veed.io/embed/d0924821-13aa-4053-bb0d-4c911f9bfc5b?watermark=0&color=&sharing=0&title=0"
                       title="Demonstração do indicador NEXUM"
                       allow="autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media"
                       allowFullScreen
