@@ -22,8 +22,8 @@ export const nexumLessons: readonly NexumLesson[] = [
       "https://www.veed.io/embed/aa03563b-a437-496c-be74-45c0d1d949e0?watermark=0&color=&sharing=0&title=0",
     resource: {
       href: "https://paredesofrer.fluxosimplificado.com/",
-      label: "Acessar o Pare de Sofrer",
-      description: "Continue sua evolução operacional.",
+      label: "Quer ir além? Conheça o método 5C e tenha um operacional completo",
+      description: "Acesse agora e conheça o próximo passo da sua evolução.",
       type: "external" as const,
     },
   },

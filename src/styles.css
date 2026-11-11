@@ -2792,26 +2792,26 @@ footer {
   gap: 13px;
   margin-top: 20px;
   padding: 14px 15px;
-  border: 1px solid rgba(166, 92, 255, 0.24);
+  border: 1px solid rgba(244, 182, 38, 0.36);
   border-radius: 11px;
-  background: linear-gradient(100deg, rgba(156, 78, 246, 0.12), rgba(156, 78, 246, 0.03));
+  background: linear-gradient(100deg, rgba(244, 182, 38, 0.13), rgba(244, 182, 38, 0.025));
   color: #fff;
   transition:
     border-color 0.2s ease,
     transform 0.2s ease;
 }
 .course-lesson-resource:hover {
-  border-color: rgba(180, 112, 255, 0.5);
+  border-color: rgba(244, 182, 38, 0.68);
   transform: translateY(-1px);
 }
 .course-lesson-resource-icon {
   display: grid;
   width: 42px;
   height: 42px;
-  border: 1px solid rgba(176, 104, 255, 0.3);
+  border: 1px solid rgba(244, 182, 38, 0.42);
   border-radius: 10px;
-  background: rgba(160, 80, 250, 0.12);
-  color: #bd82ff;
+  background: rgba(244, 182, 38, 0.12);
+  color: #f4b626;
   place-items: center;
 }
 .course-lesson-resource-icon svg {
@@ -2825,7 +2825,12 @@ footer {
   gap: 4px;
 }
 .course-lesson-resource strong {
-  font-size: 12px;
+  color: #f4b626;
+  font-size: clamp(14px, 1.35vw, 18px);
+  font-weight: 800;
+  line-height: 1.3;
+  letter-spacing: -0.015em;
+  text-wrap: balance;
 }
 .course-lesson-resource small {
   color: rgba(255, 255, 255, 0.42);
