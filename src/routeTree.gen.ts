@@ -17,6 +17,7 @@ import { Route as InscricaoRouteImport } from './routes/inscricao'
 import { Route as CursoRouteImport } from './routes/curso'
 import { Route as ConsultaClienteRouteImport } from './routes/consulta-cliente'
 import { Route as AdminRouteImport } from './routes/admin'
+import { Route as AcesseonexumRouteImport } from './routes/acesseonexum'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ApiHotmartRouteImport } from './routes/api/hotmart'
 
@@ -60,6 +61,11 @@ const AdminRoute = AdminRouteImport.update({
   path: '/admin',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AcesseonexumRoute = AcesseonexumRouteImport.update({
+  id: '/acesseonexum',
+  path: '/acesseonexum',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
@@ -73,6 +79,7 @@ const ApiHotmartRoute = ApiHotmartRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/acesseonexum': typeof AcesseonexumRoute
   '/admin': typeof AdminRoute
   '/consulta-cliente': typeof ConsultaClienteRoute
   '/curso': typeof CursoRoute
@@ -85,6 +92,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/acesseonexum': typeof AcesseonexumRoute
   '/admin': typeof AdminRoute
   '/consulta-cliente': typeof ConsultaClienteRoute
   '/curso': typeof CursoRoute
@@ -98,6 +106,7 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/acesseonexum': typeof AcesseonexumRoute
   '/admin': typeof AdminRoute
   '/consulta-cliente': typeof ConsultaClienteRoute
   '/curso': typeof CursoRoute
@@ -112,6 +121,7 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/acesseonexum'
     | '/admin'
     | '/consulta-cliente'
     | '/curso'
@@ -124,6 +134,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/acesseonexum'
     | '/admin'
     | '/consulta-cliente'
     | '/curso'
@@ -136,6 +147,7 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/acesseonexum'
     | '/admin'
     | '/consulta-cliente'
     | '/curso'
@@ -149,6 +161,7 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AcesseonexumRoute: typeof AcesseonexumRoute
   AdminRoute: typeof AdminRoute
   ConsultaClienteRoute: typeof ConsultaClienteRoute
   CursoRoute: typeof CursoRoute
@@ -218,6 +231,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/acesseonexum': {
+      id: '/acesseonexum'
+      path: '/acesseonexum'
+      fullPath: '/acesseonexum'
+      preLoaderRoute: typeof AcesseonexumRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -237,6 +257,7 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AcesseonexumRoute: AcesseonexumRoute,
   AdminRoute: AdminRoute,
   ConsultaClienteRoute: ConsultaClienteRoute,
   CursoRoute: CursoRoute,
