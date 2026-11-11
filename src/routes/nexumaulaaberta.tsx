@@ -19,7 +19,7 @@ export const Route = createFileRoute("/nexumaulaaberta")({
       { title: "Aulas abertas NEXUM" },
       {
         name: "description",
-        content: "Assista gratuitamente às quatro aulas práticas do treinamento NEXUM.",
+        content: "Assista gratuitamente à aula prática do treinamento NEXUM.",
       },
       { name: "robots", content: "index, follow" },
     ],
@@ -65,8 +65,8 @@ function OpenNexumCoursePage() {
               </span>
               <h1>Domine o NEXUM e transforme pressão em decisão.</h1>
               <p>
-                Assista às quatro aulas práticas na ordem e aprenda a instalar e utilizar as
-                ferramentas com mais clareza na sua operação.
+                Assista à aula completa e aprenda a utilizar o NEXUM com mais clareza na sua
+                operação.
               </p>
             </div>
           </div>
@@ -89,8 +89,8 @@ function OpenNexumCoursePage() {
                   </button>
                 ) : (
                   <iframe
-                    key={activeLesson.videoId}
-                    src={`https://player.vimeo.com/video/${activeLesson.videoId}?dnt=1&title=0&byline=0&portrait=0${playingLesson === activeLesson.number ? "&autoplay=1" : ""}`}
+                    key={activeLesson.embedUrl}
+                    src={activeLesson.embedUrl}
                     title={`Aula ${activeLesson.number} — ${activeLesson.title}`}
                     allow="autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media; web-share"
                     referrerPolicy="strict-origin-when-cross-origin"
@@ -151,7 +151,7 @@ function OpenNexumCoursePage() {
               <div className="course-module-card">
                 <div className="course-module-heading">
                   <span>Treinamento NEXUM</span>
-                  <strong>4 aulas abertas</strong>
+                  <strong>1 aula aberta</strong>
                 </div>
 
                 <div className="course-lessons-list">

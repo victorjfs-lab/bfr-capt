@@ -1,5 +1,4 @@
 import { createFileRoute } from "@tanstack/react-router";
-import Player from "@vimeo/player";
 import {
   ArrowLeft,
   Check,
@@ -65,7 +64,6 @@ function CoursePage() {
   const [playingLesson, setPlayingLesson] = useState<number | null>(null);
   const [completedLessons, setCompletedLessons] = useState<number[]>([]);
   const completedLessonsRef = useRef<number[]>([]);
-  const playerIframeRef = useRef<HTMLIFrameElement | null>(null);
 
   useEffect(() => {
     let active = true;
@@ -145,33 +143,8 @@ function CoursePage() {
     persistCompletedLessons(next);
   }
 
-  const markLessonWatched = useCallback(
-    (lessonNumber: number) => {
-      if (completedLessonsRef.current.includes(lessonNumber)) return;
-      persistCompletedLessons([...completedLessonsRef.current, lessonNumber]);
-    },
-    [persistCompletedLessons],
-  );
-
   const activeLesson = lessons[selectedLesson];
   const activeLessonCompleted = completedLessons.includes(activeLesson.number);
-
-  useEffect(() => {
-    const iframe = playerIframeRef.current;
-    if (accessState !== "granted" || !iframe) return;
-
-    const player = new Player(iframe);
-    let listening = true;
-    const handleTimeUpdate = ({ percent }: { percent: number }) => {
-      if (listening && percent >= 0.9) markLessonWatched(activeLesson.number);
-    };
-
-    player.on("timeupdate", handleTimeUpdate);
-    return () => {
-      listening = false;
-      player.off("timeupdate", handleTimeUpdate);
-    };
-  }, [accessState, activeLesson.number, activeLesson.videoId, markLessonWatched, playingLesson]);
 
   if (accessState !== "granted") {
     return (
@@ -207,8 +180,8 @@ function CoursePage() {
               </span>
               <h1>Domine o NEXUM e transforme pressão em decisão.</h1>
               <p>
-                Assista às aulas na ordem, instale as ferramentas e aprenda a reconhecer com mais
-                clareza quando entrar, quando sair e quando ficar de fora.
+                Assista à aula completa e aprenda a utilizar o NEXUM com mais clareza na sua
+                operação.
               </p>
             </div>
 
@@ -245,9 +218,8 @@ function CoursePage() {
                   </button>
                 ) : (
                   <iframe
-                    key={activeLesson.videoId}
-                    ref={playerIframeRef}
-                    src={`https://player.vimeo.com/video/${activeLesson.videoId}?dnt=1&title=0&byline=0&portrait=0${playingLesson === activeLesson.number ? "&autoplay=1" : ""}`}
+                    key={activeLesson.embedUrl}
+                    src={activeLesson.embedUrl}
                     title={`Aula ${activeLesson.number} — ${activeLesson.title}`}
                     allow="autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media; web-share"
                     referrerPolicy="strict-origin-when-cross-origin"
@@ -320,7 +292,9 @@ function CoursePage() {
               <div className="course-module-card">
                 <div className="course-module-heading">
                   <span>Mini curso NEXUM</span>
-                  <strong>{lessons.length} aulas práticas</strong>
+                  <strong>
+                    {lessons.length === 1 ? "1 aula prática" : `${lessons.length} aulas práticas`}
+                  </strong>
                 </div>
 
                 <div className="course-lessons-list">
