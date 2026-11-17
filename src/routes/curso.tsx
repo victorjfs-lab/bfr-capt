@@ -336,7 +336,7 @@ function CoursePage() {
                   <p>Concluiu as aulas? Envie uma mensagem para receber o indicador.</p>
                 </div>
                 <a
-                  href="https://wa.me/554191920291?text=Quero%20solicitar%20o%20indicador%2C%20j%C3%A1%20fiz%20as%20aulas"
+                  href="https://wa.me/554184092761?text=Quero%20solicitar%20o%20indicador%2C%20j%C3%A1%20fiz%20as%20aulas"
                   target="_blank"
                   rel="noreferrer"
                   onClick={() => {
